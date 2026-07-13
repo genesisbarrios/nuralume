@@ -11,10 +11,10 @@ const CENTER_POSITION: Record<Center, [number, number, number]> = {
   Head: [0, 1.6, 0.15],
   Ajna: [0, 1.44, 0.25],
   Throat: [0, 1.28, 0.2],
+  Heart: [0, 0.95, 0.22],
   G: [0, 0.7, 0.24],
-  Heart: [0.34, 0.62, 0.2],
-  Spleen: [-0.38, 0.32, 0.16],
-  SolarPlexus: [0.38, 0.32, 0.16],
+  Spleen: [-0.2, 0.32, 0.16],
+  SolarPlexus: [0.2, 0.32, 0.16],
   Sacral: [0, 0.1, 0.22],
   Root: [0, -0.18, 0.15],
 };
