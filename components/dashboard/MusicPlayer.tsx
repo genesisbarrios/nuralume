@@ -107,7 +107,9 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
           <TrackArt track={current} className="h-14 w-14" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{current.title}</p>
-            <p className="truncate text-xs text-base-content/60">{current.label}</p>
+            <p className="truncate text-xs text-base-content/60">
+              {current.artist ? `${current.artist} • ${current.label}` : current.label}
+            </p>
           </div>
         </div>
 
@@ -188,7 +190,9 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
               <TrackArt track={track} className="h-9 w-9" />
               <span className="min-w-0 flex-1 truncate">
                 {track.title}{" "}
-                <span className="text-base-content/50">— {track.label}</span>
+                <span className="text-base-content/50">
+                  — {track.artist ? `${track.artist} • ${track.label}` : track.label}
+                </span>
               </span>
               {index === currentIndex && isPlaying && (
                 <span className="text-xs">▶</span>

@@ -45,7 +45,7 @@ const features: Feature[] = [
     icon: Fingerprint,
     title: "Personality Tests",
     description:
-      "Human Design, astrology, and numerology — go deeper on who you are with insights built from your birth details.",
+      "OCEAN (Big Five), Myers-Briggs, and Archetype — go deeper on who you are with tests built right into your dashboard.",
   },
 ];
 

@@ -56,7 +56,7 @@ const config: ConfigProps = {
         features: [
           { name: "Full healing music library" },
           { name: "Unlimited reminders" },
-          { name: "Full birth chart & Human Design" },
+          { name: "Full birth chart" },
           { name: "Numerology deep dive" },
         ],
       },

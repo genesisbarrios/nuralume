@@ -9,7 +9,9 @@ export async function getTracksByCategory(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("tracks")
-    .select("id, title, label, storage_path, duration_seconds, subcategory")
+    .select(
+      "id, title, artist, label, storage_path, duration_seconds, subcategory"
+    )
     .eq("category", category)
     .order("sort_order", { ascending: true });
 
@@ -28,6 +30,7 @@ export async function getTracksByCategory(
       return {
         id: track.id,
         title: track.title,
+        artist: track.artist,
         label: track.label,
         url: publicUrl,
         durationSeconds: track.duration_seconds,

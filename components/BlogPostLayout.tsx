@@ -37,6 +37,7 @@ export default function BlogPostLayout({
                 year: "numeric",
                 month: "long",
                 day: "numeric",
+                timeZone: "UTC",
               })}{" "}
               &middot; {post.readTime}
             </p>

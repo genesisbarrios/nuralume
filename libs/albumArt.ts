@@ -2,22 +2,28 @@ import { parseWebStream } from "music-metadata";
 import { unstable_cache } from "next/cache";
 
 async function extractAlbumArt(url: string): Promise<string | null> {
-  const response = await fetch(url);
-  if (!response.ok || !response.body) return null;
-
+  // A hung or failing fetch here must never take the whole tracks list down
+  // with it — wrap the entire thing (not just parsing) and cap how long a
+  // slow/unresponsive storage request can block the page render.
   try {
-    const metadata = await parseWebStream(response.body, undefined, {
-      duration: false,
-      skipCovers: false,
-    });
-    const picture = metadata.common.picture?.[0];
-    if (!picture) return null;
+    const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!response.ok || !response.body) return null;
 
-    return `data:${picture.format};base64,${Buffer.from(picture.data).toString("base64")}`;
-  } catch {
+    try {
+      const metadata = await parseWebStream(response.body, undefined, {
+        duration: false,
+        skipCovers: false,
+      });
+      const picture = metadata.common.picture?.[0];
+      if (!picture) return null;
+
+      return `data:${picture.format};base64,${Buffer.from(picture.data).toString("base64")}`;
+    } finally {
+      await response.body.cancel().catch(() => {});
+    }
+  } catch (err) {
+    console.error("[albumArt] falling back to no cover:", err);
     return null;
-  } finally {
-    await response.body.cancel().catch(() => {});
   }
 }
 

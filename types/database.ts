@@ -7,7 +7,9 @@ export type PersonalityTestType =
   | "archetype"
   | "horoscope";
 export type TrackCategory = "brain_waves" | "solfeggio" | "binaural_beats";
-export type TrackSubcategory = "alpha" | "beta" | "delta" | "theta" | "gamma";
+// Free-form: brain_waves uses wave-band names ("delta"), solfeggio uses Hz
+// labels ("432Hz"), etc. — meaning differs per category, so no fixed enum.
+export type TrackSubcategory = string;
 export type ReminderCategory =
   | "hydration"
   | "nutrition"
@@ -122,6 +124,7 @@ export interface Database {
           category: TrackCategory;
           subcategory: TrackSubcategory | null;
           label: string;
+          artist: string | null;
           storage_path: string;
           duration_seconds: number | null;
           sort_order: number;

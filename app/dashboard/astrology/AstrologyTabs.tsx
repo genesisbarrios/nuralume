@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Hash, Moon, RefreshCw, Sun } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ChevronDown, Hash, Moon, RefreshCw, Sun } from "lucide-react";
 import ApiFallbackNotice from "@/components/dashboard/ApiFallbackNotice";
 import BirthDataForm from "@/components/dashboard/BirthDataForm";
+import type { CelestialVariant } from "@/components/dashboard/CelestialOrb";
 import type { NumerologyProfile } from "@/libs/numerology";
-import type { AstrologyResult } from "@/libs/astrology";
+import type { AstrologyPlanet, AstrologyResult } from "@/libs/astrology";
 import type { HoroscopeFrequency } from "@/libs/horoscope";
 import type { ProfileBirthData } from "@/libs/profile";
+import type { ZodiacSign } from "@/libs/zodiac";
 import { getProfileBirthData } from "@/libs/profile";
 import {
   getOrComputeBirthChart,
@@ -15,6 +18,18 @@ import {
   getOrComputeNumerology,
   type HoroscopeBundle,
 } from "./actions";
+
+const CelestialOrb = dynamic(
+  () => import("@/components/dashboard/CelestialOrb"),
+  { ssr: false }
+);
+const ZodiacAnimalIcon = dynamic(
+  () =>
+    import("@/components/dashboard/ZodiacAnimals3D").then(
+      (m) => m.ZodiacAnimalIcon
+    ),
+  { ssr: false }
+);
 
 type Tab = "birth_chart" | "horoscope" | "numerology";
 
@@ -186,6 +201,60 @@ function RefreshButton({
   );
 }
 
+const PLANET_MEANING: Record<string, string> = {
+  Sun: "Core identity and ego — who you fundamentally are.",
+  Moon: "Emotions, instincts, and your inner world.",
+  Mercury: "Communication, thinking, and how you process information.",
+  Venus: "Love, beauty, and what you value.",
+  Mars: "Drive, action, and how you assert yourself.",
+  Jupiter: "Growth, luck, and expansion.",
+  Saturn: "Discipline, structure, and lessons through limitation.",
+  Uranus: "Change, rebellion, and sudden insight.",
+  Neptune: "Dreams, intuition, and spirituality.",
+  Pluto: "Transformation, power, and what lies beneath the surface.",
+  Chiron: "The “wounded healer” — where you've been hurt, and how you heal others.",
+};
+
+const SIGN_MEANING: Record<string, string> = {
+  Aries: "Bold, direct, and quick to act — natural initiator energy.",
+  Taurus: "Steady, sensual, and grounded — values comfort and consistency.",
+  Gemini: "Curious, adaptable, and communicative — thrives on variety.",
+  Cancer: "Nurturing, intuitive, and protective — tied to home and feeling.",
+  Leo: "Warm, expressive, and confident — drawn to creativity and recognition.",
+  Virgo: "Precise, practical, and analytical — finds meaning in improvement.",
+  Libra: "Diplomatic and harmony-seeking — values balance and fairness.",
+  Scorpio: "Intense, perceptive, and transformative — drawn to depth over surface.",
+  Sagittarius: "Adventurous, honest, and philosophical — craves freedom and meaning.",
+  Capricorn: "Disciplined, ambitious, and patient — builds for the long term.",
+  Aquarius: "Independent, inventive, and idealistic — thinks in terms of the collective.",
+  Pisces: "Empathetic, imaginative, and dreamy — attuned to the unseen.",
+};
+
+const HOUSE_MEANING: Record<number, string> = {
+  1: "Self, identity, and how you present to the world.",
+  2: "Money, possessions, and what you value.",
+  3: "Communication, siblings, and everyday learning.",
+  4: "Home, family, and your roots.",
+  5: "Creativity, romance, and self-expression.",
+  6: "Health, work, and daily routines.",
+  7: "Partnerships and one-on-one relationships.",
+  8: "Transformation, intimacy, and shared resources.",
+  9: "Philosophy, travel, and higher learning.",
+  10: "Career, reputation, and public life.",
+  11: "Community, friendships, and hopes for the future.",
+  12: "The subconscious, spirituality, and letting go.",
+};
+
+function ExpandChevron({ open }: { open: boolean }) {
+  return (
+    <ChevronDown
+      className={`h-3 w-3 text-base-content/40 transition-transform ${
+        open ? "rotate-180" : ""
+      }`}
+    />
+  );
+}
+
 function BirthChartPanel({
   result,
   isPending,
@@ -195,35 +264,195 @@ function BirthChartPanel({
   isPending: boolean;
   onRefresh: () => void;
 }) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const toggle = (key: string) =>
+    setExpanded((current) => (current === key ? null : key));
+
   if (!result) {
     return <p className="text-sm text-base-content/60">Calculating...</p>;
   }
+
+  const findPlanet = (name: string): AstrologyPlanet | undefined =>
+    result.planets?.find((p) => p.name === name);
+
+  const otherPlanets =
+    result.planets?.filter((p) => p.name !== "Sun" && p.name !== "Moon") ??
+    [];
 
   return (
     <div>
       {result.source === "fallback" && (
         <ApiFallbackNotice message="Showing your sun sign only — add a birth time and city for your full chart." />
       )}
-      <div className="grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-xl bg-base-200 p-4">
-          <p className="font-handwritten text-xl text-primary">
-            {result.sunSign}
-          </p>
-          <p className="mt-1 text-xs text-base-content/60">Sun</p>
-        </div>
-        <div className="rounded-xl bg-base-200 p-4">
-          <p className="font-handwritten text-xl text-primary">
-            {result.moonSign ?? "—"}
-          </p>
-          <p className="mt-1 text-xs text-base-content/60">Moon</p>
-        </div>
-        <div className="rounded-xl bg-base-200 p-4">
-          <p className="font-handwritten text-xl text-primary">
-            {result.risingSign ?? "—"}
-          </p>
-          <p className="mt-1 text-xs text-base-content/60">Rising</p>
-        </div>
+      <div className="mb-4 grid grid-cols-3 text-center">
+        {(["sun", "moon", "rising"] as CelestialVariant[]).map((variant) => (
+          <div key={variant} className="flex justify-center">
+            <CelestialOrb variant={variant} className="pointer-events-none" />
+          </div>
+        ))}
       </div>
+      <div className="grid grid-cols-3 gap-3 text-center">
+        {[
+          {
+            key: "sun",
+            sign: result.sunSign as string | null,
+            label: "Sun",
+            degree: findPlanet("Sun")?.degree ?? null,
+            house: findPlanet("Sun")?.house ?? null,
+            isRetrograde: findPlanet("Sun")?.isRetrograde ?? false,
+            meaning: PLANET_MEANING.Sun,
+          },
+          {
+            key: "moon",
+            sign: result.moonSign,
+            label: "Moon",
+            degree: findPlanet("Moon")?.degree ?? null,
+            house: findPlanet("Moon")?.house ?? null,
+            isRetrograde: findPlanet("Moon")?.isRetrograde ?? false,
+            meaning: PLANET_MEANING.Moon,
+          },
+          {
+            key: "rising",
+            sign: result.risingSign,
+            label: "Rising",
+            degree: result.risingDegree,
+            house: null,
+            isRetrograde: false,
+            meaning: "How you come across to others — your outward style.",
+          },
+        ].map(({ key, sign, label, degree, house, isRetrograde, meaning }) => {
+          const isOpen = expanded === key;
+          const hasDetail = degree != null;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => hasDetail && toggle(key)}
+              className={`rounded-xl bg-base-200 p-4 text-center transition-colors ${
+                hasDetail ? "cursor-pointer hover:bg-base-300" : "cursor-default"
+              }`}
+            >
+              <p className="font-handwritten text-xl text-primary">
+                {sign ?? "—"}
+              </p>
+              <p className="mt-1 flex items-center justify-center gap-1 text-xs text-base-content/60">
+                {label}
+                {hasDetail && <ExpandChevron open={isOpen} />}
+              </p>
+              {isOpen && hasDetail && (
+                <div className="mt-2 border-t border-base-300 pt-2 text-left text-[11px] text-base-content/60">
+                  <p>
+                    {degree}° {sign}
+                  </p>
+                  {house != null && <p>House {house}</p>}
+                  {isRetrograde && <p>Retrograde</p>}
+                  <p className="mt-1">{meaning}</p>
+                  {sign && SIGN_MEANING[sign] && (
+                    <p className="mt-1">
+                      <span className="font-semibold">In {sign}:</span>{" "}
+                      {SIGN_MEANING[sign]}
+                    </p>
+                  )}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {otherPlanets.length > 0 && (
+        <div className="mt-6">
+          <p className="mb-2 font-handwritten text-lg">Planets</p>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {otherPlanets.map((p) => {
+              const key = `planet-${p.name}`;
+              const isOpen = expanded === key;
+              return (
+                <button
+                  key={p.name}
+                  type="button"
+                  onClick={() => toggle(key)}
+                  className="flex flex-col items-center rounded-lg bg-base-200 p-2 text-center transition-colors hover:bg-base-300"
+                >
+                  <ZodiacAnimalIcon
+                    sign={p.sign as ZodiacSign}
+                    className="pointer-events-none"
+                  />
+                  <p className="flex items-center gap-1 text-[10px] text-base-content/50">
+                    {p.name}
+                    <ExpandChevron open={isOpen} />
+                  </p>
+                  <p className="text-sm font-semibold">
+                    {p.sign}
+                    {p.isRetrograde && (
+                      <span className="ml-1 text-warning">R</span>
+                    )}
+                  </p>
+                  {isOpen && (
+                    <div className="mt-2 w-full border-t border-base-300 pt-2 text-left text-[11px] text-base-content/60">
+                      <p>{p.degree}° {p.sign}</p>
+                      <p>House {p.house}</p>
+                      {p.isRetrograde && <p>Retrograde</p>}
+                      <p className="mt-1">{PLANET_MEANING[p.name]}</p>
+                      {SIGN_MEANING[p.sign] && (
+                        <p className="mt-1">
+                          <span className="font-semibold">In {p.sign}:</span>{" "}
+                          {SIGN_MEANING[p.sign]}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {result.houses && (
+        <div className="mt-6">
+          <p className="mb-2 font-handwritten text-lg">Houses</p>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {result.houses.map((h) => {
+              const key = `house-${h.house}`;
+              const isOpen = expanded === key;
+              return (
+                <button
+                  key={h.house}
+                  type="button"
+                  onClick={() => toggle(key)}
+                  className="flex flex-col items-center rounded-lg bg-base-200 p-2 text-center transition-colors hover:bg-base-300"
+                >
+                  <ZodiacAnimalIcon
+                    sign={h.sign as ZodiacSign}
+                    className="pointer-events-none"
+                  />
+                  <p className="flex items-center gap-1 text-[10px] text-base-content/50">
+                    House {h.house}
+                    <ExpandChevron open={isOpen} />
+                  </p>
+                  <p className="text-sm font-semibold">{h.sign}</p>
+                  <p className="text-[10px] text-base-content/50">
+                    {h.degree}°
+                  </p>
+                  {isOpen && (
+                    <div className="mt-2 w-full border-t border-base-300 pt-2 text-left text-[11px] text-base-content/60">
+                      <p>{HOUSE_MEANING[h.house]}</p>
+                      {SIGN_MEANING[h.sign] && (
+                        <p className="mt-1">
+                          <span className="font-semibold">In {h.sign}:</span>{" "}
+                          {SIGN_MEANING[h.sign]}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <RefreshButton onRefresh={onRefresh} isPending={isPending} />
     </div>
   );
@@ -266,7 +495,9 @@ function HoroscopePanel({
         ))}
       </div>
 
-      {result.source === "fallback" && <ApiFallbackNotice />}
+      {result.source === "fallback" && (
+        <ApiFallbackNotice message="Showing general guidance — add a birth time and city for a horoscope based on your real transits." />
+      )}
       <p className="mb-2 text-center font-handwritten text-2xl">
         {result.sign}
       </p>

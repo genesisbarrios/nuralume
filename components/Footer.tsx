@@ -30,6 +30,26 @@ export default function Footer() {
               <li><Link href="/blog" className="link link-hover">Blog</Link></li>
               <li><Link href="/#pricing" className="link link-hover">Pricing</Link></li>
               <li><Link href="/login" className="link link-hover">Sign in</Link></li>
+              <li>
+                <a
+                  href="https://instagram.com/nuralumewellness"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="link link-hover"
+                >
+                  Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://tiktok.com/@nuralumewellness"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="link link-hover"
+                >
+                  TikTok
+                </a>
+              </li>
             </ul>
           </div>
 

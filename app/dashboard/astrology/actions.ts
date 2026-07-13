@@ -9,7 +9,6 @@ import {
   type HoroscopeFrequency,
   type HoroscopeResult,
 } from "@/libs/horoscope";
-import { getSunSignFromDate } from "@/libs/zodiac";
 import { getProfileBirthData, saveBirthData } from "@/libs/profile";
 import type { PersonalityTestType } from "@/types/database";
 
@@ -96,26 +95,53 @@ export async function getOrComputeBirthChart(
   return result;
 }
 
-// Daily and weekly are fetched together and cached as one unit — the API is
-// only called again when the user explicitly refreshes or saves/edits their
-// birth details, not on every page visit. (Monthly is intentionally not
-// offered — astrologyapi.com's monthly endpoint returns generic placeholder
-// content regardless of sign or params on the current plan tier.)
+function isSameUtcDay(a: Date, b: Date): boolean {
+  return (
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate()
+  );
+}
+
+// Generated from the user's actual transits (see libs/horoscope.ts), so it's
+// genuinely daily — cached per calendar day (UTC) rather than indefinitely,
+// and recomputed automatically once that day rolls over, on top of the
+// existing explicit-refresh / birth-data-edit triggers.
 export async function getOrComputeHoroscope(
   forceRefresh = false
 ): Promise<HoroscopeBundle | null> {
   if (!forceRefresh) {
-    const saved = await getSavedResult("horoscope");
-    if (saved) return saved as unknown as HoroscopeBundle;
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data } = await supabase
+        .from("personality_results")
+        .select("result, updated_at")
+        .eq("user_id", user.id)
+        .eq("test_type", "horoscope")
+        .maybeSingle();
+
+      if (data?.result && isSameUtcDay(new Date(data.updated_at), new Date())) {
+        return data.result as unknown as HoroscopeBundle;
+      }
+    }
   }
 
   const profile = await getProfileBirthData();
   if (!profile?.birthDate) return null;
 
-  const sign = getSunSignFromDate(profile.birthDate);
+  const birthInput = {
+    birthDate: profile.birthDate,
+    birthTime: profile.birthTime,
+    city: profile.birthCity,
+    countryCode: profile.birthCountryCode,
+  };
   const [daily, weekly] = await Promise.all([
-    getHoroscope(sign, "daily"),
-    getHoroscope(sign, "weekly"),
+    getHoroscope(birthInput, "daily"),
+    getHoroscope(birthInput, "weekly"),
   ]);
 
   const bundle: HoroscopeBundle = { daily, weekly };

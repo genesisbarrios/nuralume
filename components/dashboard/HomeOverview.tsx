@@ -196,6 +196,7 @@ export default function HomeOverview({
                         year: "numeric",
                         month: "long",
                         day: "numeric",
+                        timeZone: "UTC",
                       })
                     : "No birth date yet"}
                   {profile?.birthCity ? ` · ${profile.birthCity}` : ""}
