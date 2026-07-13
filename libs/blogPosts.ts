@@ -59,6 +59,26 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     tag: "Reading List",
     emoji: "📚",
   },
+  {
+    slug: "what-are-brain-waves-and-how-music-affects-the-brain",
+    title: "What Are Brain Waves — and How Does Music Affect the Brain?",
+    excerpt:
+      "Delta, theta, alpha, beta, gamma: the five patterns your brain cycles through, how sound can nudge you between them, and where binaural beats and Solfeggio frequencies fit in.",
+    date: "2026-06-19",
+    readTime: "9 min read",
+    tag: "Neuroscience",
+    emoji: "🧠",
+  },
+  {
+    slug: "the-power-of-daily-affirmations",
+    title: "The Power of Daily Affirmations (and How to Write Ones That Work)",
+    excerpt:
+      "Affirmations only work if they're built right. Here's the psychology behind them, and a simple framework for writing ones you'll actually believe.",
+    date: "2026-07-03",
+    readTime: "6 min read",
+    tag: "Affirmations",
+    emoji: "🪞",
+  },
 ];
 
 export function getBlogPost(slug: string) {
