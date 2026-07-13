@@ -1,7 +1,10 @@
 import type { ZodiacSign } from "@/libs/zodiac";
 import { hasAstrologyApiKey, postAstrologyApi } from "@/libs/astrologyApiCom";
 
-export type HoroscopeFrequency = "daily" | "weekly" | "monthly";
+// Monthly isn't offered — astrologyapi.com's monthly endpoint returns generic
+// placeholder content regardless of sign or params on the current plan tier,
+// confirmed via live testing (not something fixable from this side).
+export type HoroscopeFrequency = "daily" | "weekly";
 
 export interface HoroscopeResult {
   sign: ZodiacSign;
@@ -39,13 +42,11 @@ interface DailyResponse {
 
 interface MultiParagraphResponse {
   prediction: string[];
-  prediction_month?: string;
 }
 
 const ENDPOINTS: Record<HoroscopeFrequency, string> = {
   daily: "sun_sign_prediction/daily",
   weekly: "horoscope_prediction/weekly",
-  monthly: "horoscope_prediction/monthly",
 };
 
 export async function getHoroscope(
@@ -80,10 +81,9 @@ export async function getHoroscope(
       ).join(" ");
     }
 
-    // The monthly endpoint returns generic placeholder copy on our current
-    // plan tier ("This is sample monthly predictions...") regardless of
-    // sign — treat that the same as an unavailable API rather than showing
-    // it as a real reading.
+    // Defensive: astrologyapi.com has been observed returning generic
+    // "sample" placeholder copy on some endpoints/plan tiers — treat that
+    // the same as an unavailable API rather than showing it as a real reading.
     if (!text || text.trim().toLowerCase().startsWith("this is sample")) {
       throw new Error(`${frequency} horoscope returned placeholder content`);
     }

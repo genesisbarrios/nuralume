@@ -232,7 +232,6 @@ function BirthChartPanel({
 const FREQUENCY_LABELS: Record<HoroscopeFrequency, string> = {
   daily: "Daily",
   weekly: "Weekly",
-  monthly: "Monthly",
 };
 
 function HoroscopePanel({

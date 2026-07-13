@@ -96,9 +96,11 @@ export async function getOrComputeBirthChart(
   return result;
 }
 
-// Daily, weekly, and monthly are fetched together and cached as one unit —
-// the API is only called again when the user explicitly refreshes or saves/
-// edits their birth details, not on every page visit.
+// Daily and weekly are fetched together and cached as one unit — the API is
+// only called again when the user explicitly refreshes or saves/edits their
+// birth details, not on every page visit. (Monthly is intentionally not
+// offered — astrologyapi.com's monthly endpoint returns generic placeholder
+// content regardless of sign or params on the current plan tier.)
 export async function getOrComputeHoroscope(
   forceRefresh = false
 ): Promise<HoroscopeBundle | null> {
@@ -111,13 +113,12 @@ export async function getOrComputeHoroscope(
   if (!profile?.birthDate) return null;
 
   const sign = getSunSignFromDate(profile.birthDate);
-  const [daily, weekly, monthly] = await Promise.all([
+  const [daily, weekly] = await Promise.all([
     getHoroscope(sign, "daily"),
     getHoroscope(sign, "weekly"),
-    getHoroscope(sign, "monthly"),
   ]);
 
-  const bundle: HoroscopeBundle = { daily, weekly, monthly };
+  const bundle: HoroscopeBundle = { daily, weekly };
   await saveResult("horoscope", bundle as unknown as Record<string, unknown>);
   revalidatePath("/dashboard/astrology");
   revalidatePath("/dashboard/home");
