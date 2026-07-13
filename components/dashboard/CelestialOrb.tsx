@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Canvas } from "@react-three/fiber";
-import { MeshDistortMaterial, Sparkles } from "@react-three/drei";
+import { MeshDistortMaterial, PerspectiveCamera, Sparkles, View } from "@react-three/drei";
 import * as THREE from "three";
 import { Bouncing } from "./BouncingOrb";
 
@@ -173,27 +172,25 @@ export default function CelestialOrb({
   const color = VARIANT_COLOR[variant];
 
   return (
-    <div className={`h-28 ${VARIANT_WIDTH[variant]} ${className}`} aria-hidden="true">
-      <Canvas
-        dpr={[1, 1.5]}
-        camera={{ position: [0, 0, 4], fov: 40 }}
-        gl={{ alpha: true, antialias: true }}
-      >
-        <ambientLight intensity={0.5} />
-        <pointLight
-          position={[2, 2, 3]}
-          intensity={variant === "sun" ? 90 : 45}
-          color={color}
-        />
-        <pointLight position={[-2, -1, 2]} intensity={12} color="#ffffff" />
-        <Bouncing phase={VARIANT_PHASE[variant]}>
-          {variant === "sun" && <SunBody radius={0.85} color={color} />}
-          {variant === "moon" && <MoonBody radius={0.85} color={color} />}
-          {variant === "rising" && (
-            <RisingBody sphereRadius={0.65} color={color} />
-          )}
-        </Bouncing>
-      </Canvas>
-    </div>
+    <View
+      className={`h-28 ${VARIANT_WIDTH[variant]} ${className}`}
+      aria-hidden="true"
+    >
+      <PerspectiveCamera makeDefault position={[0, 0, 4]} fov={40} />
+      <ambientLight intensity={0.5} />
+      <pointLight
+        position={[2, 2, 3]}
+        intensity={variant === "sun" ? 90 : 45}
+        color={color}
+      />
+      <pointLight position={[-2, -1, 2]} intensity={12} color="#ffffff" />
+      <Bouncing phase={VARIANT_PHASE[variant]}>
+        {variant === "sun" && <SunBody radius={0.85} color={color} />}
+        {variant === "moon" && <MoonBody radius={0.85} color={color} />}
+        {variant === "rising" && (
+          <RisingBody sphereRadius={0.65} color={color} />
+        )}
+      </Bouncing>
+    </View>
   );
 }

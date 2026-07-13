@@ -22,6 +22,7 @@ const CATEGORIES: ReminderCategory[] = [
   "exercise",
   "grounding",
   "coping_skills",
+  "reading",
 ];
 
 export default function ReminderList({

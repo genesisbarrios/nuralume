@@ -7,6 +7,7 @@ export const REMINDER_CATEGORY_LABELS: Record<ReminderCategory, string> = {
   exercise: "Exercise",
   grounding: "Grounding",
   coping_skills: "Coping Skills",
+  reading: "Read",
 };
 
 // Static for now — deliberately isolated behind getRotatingReminderMessage()
@@ -84,6 +85,18 @@ const MESSAGE_POOLS: Record<ReminderCategory, string[]> = {
     "Notice the story you're telling yourself — is it the whole truth?",
     "A hard moment isn't a hard life — this will shift.",
     "Ask yourself what you actually need right now, not what you 'should' do.",
+  ],
+  reading: [
+    "Read 10 pages today.",
+    "Read for 20–30 minutes today.",
+    "Pick up that book you've been meaning to get back to.",
+    "A few pages now count more than a big session later.",
+    "Trade ten minutes of scrolling for ten minutes of reading.",
+    "Read a chapter today — just one.",
+    "Your book is waiting. Even a short session counts.",
+    "Read for 15 minutes before you check your phone next.",
+    "Pick up where you left off — no need to reread first.",
+    "Read something today that isn't a screen notification.",
   ],
 };
 

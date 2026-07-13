@@ -9,6 +9,10 @@ import {
   type HoroscopeFrequency,
   type HoroscopeResult,
 } from "@/libs/horoscope";
+import {
+  getHumanDesignChart,
+  type HumanDesignResult,
+} from "@/libs/humanDesign";
 import { getProfileBirthData, saveBirthData } from "@/libs/profile";
 import type { PersonalityTestType } from "@/types/database";
 
@@ -149,4 +153,26 @@ export async function getOrComputeHoroscope(
   revalidatePath("/dashboard/astrology");
   revalidatePath("/dashboard/home");
   return bundle;
+}
+
+export async function getOrComputeHumanDesign(
+  forceRefresh = false
+): Promise<HumanDesignResult | null> {
+  if (!forceRefresh) {
+    const saved = await getSavedResult("human_design");
+    if (saved) return saved as unknown as HumanDesignResult;
+  }
+
+  const profile = await getProfileBirthData();
+  if (!profile?.birthDate) return null;
+
+  const result = await getHumanDesignChart({
+    birthDate: profile.birthDate,
+    birthTime: profile.birthTime,
+    city: profile.birthCity,
+    countryCode: profile.birthCountryCode,
+  });
+  await saveResult("human_design", result as unknown as Record<string, unknown>);
+  revalidatePath("/dashboard/astrology");
+  return result;
 }

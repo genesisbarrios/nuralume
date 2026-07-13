@@ -16,7 +16,8 @@ export type ReminderCategory =
   | "meditation"
   | "exercise"
   | "grounding"
-  | "coping_skills";
+  | "coping_skills"
+  | "reading";
 
 export interface Database {
   public: {

@@ -2,13 +2,14 @@
 
 import { useState, useTransition } from "react";
 import dynamic from "next/dynamic";
-import { ChevronDown, Hash, Moon, RefreshCw, Sun } from "lucide-react";
+import { ChevronDown, Hash, Moon, PersonStanding, RefreshCw, Sun } from "lucide-react";
 import ApiFallbackNotice from "@/components/dashboard/ApiFallbackNotice";
 import BirthDataForm from "@/components/dashboard/BirthDataForm";
 import type { CelestialVariant } from "@/components/dashboard/CelestialOrb";
 import type { NumerologyProfile } from "@/libs/numerology";
 import type { AstrologyPlanet, AstrologyResult } from "@/libs/astrology";
 import type { HoroscopeFrequency } from "@/libs/horoscope";
+import type { HumanDesignResult } from "@/libs/humanDesign";
 import type { ProfileBirthData } from "@/libs/profile";
 import type { ZodiacSign } from "@/libs/zodiac";
 import type { PlanetName } from "@/components/dashboard/PlanetIcons3D";
@@ -16,10 +17,15 @@ import { getProfileBirthData } from "@/libs/profile";
 import {
   getOrComputeBirthChart,
   getOrComputeHoroscope,
+  getOrComputeHumanDesign,
   getOrComputeNumerology,
   type HoroscopeBundle,
 } from "./actions";
 
+const AstroSceneRoot = dynamic(
+  () => import("@/components/dashboard/AstroSceneRoot"),
+  { ssr: false }
+);
 const CelestialOrb = dynamic(
   () => import("@/components/dashboard/CelestialOrb"),
   { ssr: false }
@@ -35,19 +41,25 @@ const PlanetIcon = dynamic(
   () => import("@/components/dashboard/PlanetIcons3D").then((m) => m.PlanetIcon),
   { ssr: false }
 );
+const HumanFigure3D = dynamic(
+  () => import("@/components/dashboard/HumanFigure3D"),
+  { ssr: false }
+);
 
-type Tab = "birth_chart" | "horoscope" | "numerology";
+type Tab = "birth_chart" | "horoscope" | "numerology" | "human_design";
 
 const TAB_LABELS: Record<Tab, string> = {
   birth_chart: "Birth Chart",
   horoscope: "Horoscope",
   numerology: "Numerology",
+  human_design: "Human Design",
 };
 
 const TAB_ICONS: Record<Tab, typeof Sun> = {
   birth_chart: Sun,
   horoscope: Moon,
   numerology: Hash,
+  human_design: PersonStanding,
 };
 
 export default function AstrologyTabs({
@@ -55,11 +67,13 @@ export default function AstrologyTabs({
   initialBirthChart,
   initialHoroscope,
   initialNumerology,
+  initialHumanDesign,
 }: {
   initialProfile: ProfileBirthData | null;
   initialBirthChart: AstrologyResult | null;
   initialHoroscope: HoroscopeBundle | null;
   initialNumerology: NumerologyProfile | null;
+  initialHumanDesign: HumanDesignResult | null;
 }) {
   const [tab, setTab] = useState<Tab>("birth_chart");
   const [profile, setProfile] = useState(initialProfile);
@@ -67,6 +81,7 @@ export default function AstrologyTabs({
   const [birthChart, setBirthChart] = useState(initialBirthChart);
   const [horoscope, setHoroscope] = useState(initialHoroscope);
   const [numerology, setNumerology] = useState(initialNumerology);
+  const [humanDesign, setHumanDesign] = useState(initialHumanDesign);
   const [isPending, startTransition] = useTransition();
 
   const hasBirthData = Boolean(profile?.displayName && profile?.birthDate);
@@ -77,8 +92,10 @@ export default function AstrologyTabs({
         setBirthChart(await getOrComputeBirthChart(true));
       } else if (target === "horoscope") {
         setHoroscope(await getOrComputeHoroscope(true));
-      } else {
+      } else if (target === "numerology") {
         setNumerology(await getOrComputeNumerology(true));
+      } else {
+        setHumanDesign(await getOrComputeHumanDesign(true));
       }
     });
   };
@@ -89,11 +106,13 @@ export default function AstrologyTabs({
     refresh("birth_chart");
     refresh("horoscope");
     refresh("numerology");
+    refresh("human_design");
   };
 
   return (
     <div>
-      <div className="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-base-200 p-1">
+      <AstroSceneRoot />
+      <div className="mb-4 grid grid-cols-4 gap-1 rounded-xl bg-base-200 p-1">
         {(Object.keys(TAB_LABELS) as Tab[]).map((t) => {
           const Icon = TAB_ICONS[t];
           const isActive = tab === t;
@@ -159,6 +178,16 @@ export default function AstrologyTabs({
                 result={numerology}
                 isPending={isPending}
                 onRefresh={() => refresh("numerology")}
+              />
+            ) : (
+              <NeedsBirthData onAdd={() => setEditingForm(true)} />
+            ))}
+          {tab === "human_design" &&
+            (hasBirthData ? (
+              <HumanDesignPanel
+                result={humanDesign}
+                isPending={isPending}
+                onRefresh={() => refresh("human_design")}
               />
             ) : (
               <NeedsBirthData onAdd={() => setEditingForm(true)} />
@@ -558,6 +587,75 @@ function NumerologyPanel({
           </p>
         ))}
       </div>
+      <RefreshButton onRefresh={onRefresh} isPending={isPending} />
+    </div>
+  );
+}
+
+function HumanDesignPanel({
+  result,
+  isPending,
+  onRefresh,
+}: {
+  result: HumanDesignResult | null;
+  isPending: boolean;
+  onRefresh: () => void;
+}) {
+  if (!result) {
+    return <p className="text-sm text-base-content/60">Calculating...</p>;
+  }
+
+  return (
+    <div>
+      {result.source === "fallback" && (
+        <ApiFallbackNotice message="Add a birth time and city to compute your real Human Design chart." />
+      )}
+      {result.type && (
+        <>
+          <div className="grid grid-cols-2 gap-3 text-center">
+            <div className="col-span-2 rounded-xl bg-base-200 p-4">
+              <p className="font-handwritten text-2xl text-primary">
+                {result.type}
+              </p>
+              <p className="mt-1 text-xs text-base-content/60">Type</p>
+            </div>
+            <div className="rounded-xl bg-base-200 p-4">
+              <p className="font-handwritten text-xl text-primary">
+                {result.authority}
+              </p>
+              <p className="mt-1 text-xs text-base-content/60">Authority</p>
+            </div>
+            <div className="rounded-xl bg-base-200 p-4">
+              <p className="font-handwritten text-xl text-primary">
+                {result.profile}
+              </p>
+              <p className="mt-1 text-xs text-base-content/60">Profile</p>
+            </div>
+          </div>
+
+          <p className="mt-4 rounded-xl bg-base-200 p-4 text-center text-sm leading-relaxed">
+            <span className="font-semibold">Strategy: </span>
+            {result.strategy}
+          </p>
+
+          <p className="mt-3 text-center text-xs text-base-content/50">
+            {result.definition} &middot;{" "}
+            {result.definedCenters?.length ?? 0} of 9 centers defined
+          </p>
+
+          {result.definedCenters && (
+            <div className="mt-6">
+              <HumanFigure3D
+                definedCenters={result.definedCenters}
+                className="pointer-events-none"
+              />
+              <p className="mt-1 text-center text-[10px] text-base-content/40">
+                Colored dots mark your defined centers.
+              </p>
+            </div>
+          )}
+        </>
+      )}
       <RefreshButton onRefresh={onRefresh} isPending={isPending} />
     </div>
   );

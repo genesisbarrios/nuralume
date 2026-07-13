@@ -1,6 +1,6 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import { PerspectiveCamera, View } from "@react-three/drei";
 import { Bouncing } from "./BouncingOrb";
 import type { ZodiacSign } from "@/libs/zodiac";
 
@@ -382,24 +382,19 @@ export function ZodiacAnimalIcon({
   const Body = SIGN_BODY[sign];
 
   return (
-    <div className={`h-14 w-14 ${className}`} aria-hidden="true">
-      <Canvas
-        dpr={[1, 1.5]}
-        camera={{ position: [0, 0, 4], fov: 40 }}
-        gl={{ alpha: true, antialias: true }}
+    <View className={`h-14 w-14 ${className}`}>
+      <PerspectiveCamera makeDefault position={[0, 0, 4]} fov={40} />
+      <ambientLight intensity={0.6} />
+      <pointLight position={[2, 2, 3]} intensity={35} color={color} />
+      <Bouncing
+        phase={SIGN_PHASE[sign]}
+        bounceHeight={0.2}
+        restY={-0.15}
+        shadowRadius={0.4}
+        speed={1.4}
       >
-        <ambientLight intensity={0.6} />
-        <pointLight position={[2, 2, 3]} intensity={35} color={color} />
-        <Bouncing
-          phase={SIGN_PHASE[sign]}
-          bounceHeight={0.2}
-          restY={-0.15}
-          shadowRadius={0.4}
-          speed={1.4}
-        >
-          <Body color={color} />
-        </Bouncing>
-      </Canvas>
-    </div>
+        <Body color={color} />
+      </Bouncing>
+    </View>
   );
 }
