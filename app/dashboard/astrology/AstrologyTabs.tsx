@@ -9,7 +9,7 @@ import type { CelestialVariant } from "@/components/dashboard/CelestialOrb";
 import type { NumerologyProfile } from "@/libs/numerology";
 import type { AstrologyPlanet, AstrologyResult } from "@/libs/astrology";
 import type { HoroscopeFrequency } from "@/libs/horoscope";
-import type { HumanDesignResult } from "@/libs/humanDesign";
+import type { Center, HumanDesignResult } from "@/libs/humanDesign";
 import type { ProfileBirthData } from "@/libs/profile";
 import type { ZodiacSign } from "@/libs/zodiac";
 import type { PlanetName } from "@/components/dashboard/PlanetIcons3D";
@@ -283,6 +283,54 @@ const HOUSE_MEANING: Record<number, string> = {
   10: "Career, reputation, and public life.",
   11: "Community, friendships, and hopes for the future.",
   12: "The subconscious, spirituality, and letting go.",
+};
+
+const CENTER_MEANING: Record<Center, { topic: string; defined: string; undefined: string }> = {
+  Head: {
+    topic: "Mental pressure and inspiration",
+    defined: "You have a consistent internal source of mental pressure and inspiration — your own questions drive you, reliably, from within.",
+    undefined: "You take in and amplify others' questions and ideas. Open to inspiration from anywhere, but can absorb pressure to have answers that were never really yours to solve.",
+  },
+  Ajna: {
+    topic: "Thinking and certainty",
+    defined: "You have a fixed, consistent way of processing information and forming opinions — your certainty is reliable and doesn't shift much with company.",
+    undefined: "You're flexible and open-minded, able to see many sides of an idea. Can also absorb others' opinions as your own, or feel pressure to seem certain when you're not.",
+  },
+  Throat: {
+    topic: "Communication and action",
+    defined: "You have a consistent, reliable way of speaking and acting — your voice and presence come through the same way regardless of who's around.",
+    undefined: "Your communication style shifts depending on who you're with. Can amplify whatever's being said around you, and may feel pressure to speak or be seen when it's not actually your moment.",
+  },
+  G: {
+    topic: "Identity, love, and direction",
+    defined: "You have a fixed sense of who you are and where you're headed — your identity and direction hold steady no matter the environment.",
+    undefined: "Your sense of self shifts with your environment and relationships. Often finds identity and direction through others rather than a fixed inner compass — which can be a gift for adaptability, or disorienting.",
+  },
+  Heart: {
+    topic: "Willpower and self-worth",
+    defined: "You have consistent willpower — reliable follow-through on commitments, and a steady sense of your own worth.",
+    undefined: "Your willpower is inconsistent. May overcompensate to prove your worth to others, or need to learn that your value was never something to prove in the first place.",
+  },
+  Spleen: {
+    topic: "Instinct and health",
+    defined: "You have consistent, in-the-moment intuition about health, safety, and what's good for you — a steady internal alarm system.",
+    undefined: "You amplify the fears and instincts of people around you. May hold onto unhealthy situations or relationships longer than is good for you, but can develop real wisdom about spotting what isn't right for you.",
+  },
+  SolarPlexus: {
+    topic: "Emotions",
+    defined: "You move through an emotional wave — there's no truth 'in the now' for you, and clarity comes with time, not in the heat of the moment.",
+    undefined: "You're an emotional sponge, absorbing and amplifying the feelings of everyone around you. Emotionally sensitive to your environment, with real potential for emotional wisdom once you learn what's yours and what isn't.",
+  },
+  Sacral: {
+    topic: "Life force and work energy",
+    defined: "You have consistent, sustainable life-force energy — a reliable gut-level yes/no response that tells you what to engage with.",
+    undefined: "Your energy levels are inconsistent. Can amplify and match the sacral energy of people around you, working past your actual limits — rest is more important for you than it is for defined types.",
+  },
+  Root: {
+    topic: "Pressure and drive",
+    defined: "You handle pressure and stress in a steady, consistent way — comfortable operating under a deadline or push to act.",
+    undefined: "You amplify the pressure and urgency around you, and may feel rushed or adopt stress that was never actually yours. Learning that the pressure isn't yours to carry brings real ease over time.",
+  },
 };
 
 function ExpandChevron({ open }: { open: boolean }) {
@@ -615,9 +663,15 @@ function HumanDesignPanel({
   onRefresh: () => void;
   onEdit: () => void;
 }) {
+  const [hoveredCenter, setHoveredCenter] = useState<Center | null>(null);
+
   if (!result) {
     return <p className="text-sm text-base-content/60">Calculating...</p>;
   }
+
+  const isHoveredDefined = hoveredCenter
+    ? (result.definedCenters?.includes(hoveredCenter) ?? false)
+    : false;
 
   return (
     <div>
@@ -661,11 +715,35 @@ function HumanDesignPanel({
             <div className="mt-6">
               <HumanFigure3D
                 definedCenters={result.definedCenters}
-                className="pointer-events-none"
+                onHoverCenter={setHoveredCenter}
               />
               <p className="mt-1 text-center text-[10px] text-base-content/40">
-                Colored dots mark your defined centers.
+                Hover a label for what it means for that center to be defined.
               </p>
+              <div className="mt-3 min-h-[5.5rem] rounded-xl bg-base-200 p-4 text-sm">
+                {hoveredCenter ? (
+                  <>
+                    <p className="font-semibold">
+                      {hoveredCenter} —{" "}
+                      <span className="text-base-content/60">
+                        {CENTER_MEANING[hoveredCenter].topic}
+                      </span>
+                    </p>
+                    <p className="mt-1 text-base-content/80">
+                      <span className="font-semibold">
+                        {isHoveredDefined ? "Defined: " : "Undefined: "}
+                      </span>
+                      {isHoveredDefined
+                        ? CENTER_MEANING[hoveredCenter].defined
+                        : CENTER_MEANING[hoveredCenter].undefined}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-base-content/50">
+                    Hover a center label above to see what it means.
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </>

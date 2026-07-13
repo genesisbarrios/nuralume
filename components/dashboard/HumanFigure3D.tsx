@@ -108,7 +108,24 @@ function FigureBody() {
   );
 }
 
-function CenterDots({ defined }: { defined: Set<Center> }) {
+function CenterDots({
+  defined,
+  onHover,
+}: {
+  defined: Set<Center>;
+  onHover: (center: Center | null) => void;
+}) {
+  const enter = (center: Center) => (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    onHover(center);
+    document.body.style.cursor = "pointer";
+  };
+  const leave = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    onHover(null);
+    document.body.style.cursor = "auto";
+  };
+
   return (
     <>
       {ALL_CENTERS.map((center) => {
@@ -119,7 +136,11 @@ function CenterDots({ defined }: { defined: Set<Center> }) {
 
         return (
           <group key={center}>
-            <mesh position={[x, y, z]}>
+            <mesh
+              position={[x, y, z]}
+              onPointerOver={enter(center)}
+              onPointerOut={leave}
+            >
               <sphereGeometry args={[isDefined ? 0.11 : 0.08, 16, 16]} />
               <meshStandardMaterial
                 color={color}
@@ -135,13 +156,15 @@ function CenterDots({ defined }: { defined: Set<Center> }) {
                 this icon's tracked <View> sub-region, so labels landed in
                 the wrong place (top-right of the whole page). Text renders
                 as actual scene geometry, so View's viewport/scissor handles
-                it correctly like any other mesh. */}
+                it correctly like any other mesh — including hover/raycasting. */}
             <Text
               position={[x + side * 0.42, y, z]}
               fontSize={0.11}
               color={isDefined ? color : "#9CA3AF"}
               anchorX={side === 1 ? "left" : "right"}
               anchorY="middle"
+              onPointerOver={enter(center)}
+              onPointerOut={leave}
             >
               {CENTER_LABEL[center]}
             </Text>
@@ -154,14 +177,19 @@ function CenterDots({ defined }: { defined: Set<Center> }) {
 
 export default function HumanFigure3D({
   definedCenters,
+  onHoverCenter,
   className = "",
 }: {
   definedCenters: Center[];
+  onHoverCenter?: (center: Center | null) => void;
   className?: string;
 }) {
   const defined = new Set(definedCenters);
 
   return (
+    // Note: no pointer-events-none here (unlike the small decorative
+    // icons) — the labels need real hover, and View's hit-testing only
+    // fires for events whose DOM target is this tracked element.
     <View className={`h-72 w-full ${className}`}>
       <PerspectiveCamera makeDefault position={[0, 0.6, 4.6]} fov={35} />
       <ambientLight intensity={0.7} />
@@ -176,7 +204,7 @@ export default function HumanFigure3D({
         spin={false}
       >
         <FigureBody />
-        <CenterDots defined={defined} />
+        <CenterDots defined={defined} onHover={(c) => onHoverCenter?.(c)} />
       </Bouncing>
     </View>
   );
