@@ -68,19 +68,17 @@ function FigureBody() {
         <meshStandardMaterial color="#E8D5C4" roughness={0.6} />
       </mesh>
       {/* Neck — short, vertical (default cylinder axis is already Y, no
-          rotation applied), just barely bridging head and shoulders. */}
-      <mesh position={[0, 1.36, 0]}>
-        <cylinderGeometry args={[0.09, 0.11, 0.1, 12]} />
-        <meshStandardMaterial color="#D9C7B8" roughness={0.6} />
-      </mesh>
-      {/* Shoulders */}
-      <mesh position={[0, 1.22, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <capsuleGeometry args={[0.13, 0.62, 4, 12]} />
+          rotation applied), bridging head and torso directly. No separate
+          shoulder bar — that horizontal element was reading as a second,
+          horizontal "neck", so shoulder width now comes from the torso's
+          own rounded top plus the arm attachment points instead. */}
+      <mesh position={[0, 1.33, 0]}>
+        <cylinderGeometry args={[0.09, 0.11, 0.08, 12]} />
         <meshStandardMaterial color="#D9C7B8" roughness={0.6} />
       </mesh>
       {/* Torso */}
-      <mesh position={[0, 0.68, 0]}>
-        <capsuleGeometry args={[0.26, 0.75, 4, 12]} />
+      <mesh position={[0, 0.66, 0]}>
+        <capsuleGeometry args={[0.29, 0.7, 4, 12]} />
         <meshStandardMaterial color="#D9C7B8" roughness={0.6} />
       </mesh>
       {/* Pelvis / root */}
@@ -144,8 +142,6 @@ function CenterDots({ defined }: { defined: Set<Center> }) {
               color={isDefined ? color : "#9CA3AF"}
               anchorX={side === 1 ? "left" : "right"}
               anchorY="middle"
-              outlineWidth={0.008}
-              outlineColor="#1a1a1a"
             >
               {CENTER_LABEL[center]}
             </Text>
