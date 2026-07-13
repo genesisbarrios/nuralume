@@ -11,6 +11,7 @@ import type { AstrologyPlanet, AstrologyResult } from "@/libs/astrology";
 import type { HoroscopeFrequency } from "@/libs/horoscope";
 import type { ProfileBirthData } from "@/libs/profile";
 import type { ZodiacSign } from "@/libs/zodiac";
+import type { PlanetName } from "@/components/dashboard/PlanetIcons3D";
 import { getProfileBirthData } from "@/libs/profile";
 import {
   getOrComputeBirthChart,
@@ -28,6 +29,10 @@ const ZodiacAnimalIcon = dynamic(
     import("@/components/dashboard/ZodiacAnimals3D").then(
       (m) => m.ZodiacAnimalIcon
     ),
+  { ssr: false }
+);
+const PlanetIcon = dynamic(
+  () => import("@/components/dashboard/PlanetIcons3D").then((m) => m.PlanetIcon),
   { ssr: false }
 );
 
@@ -374,8 +379,8 @@ function BirthChartPanel({
                   onClick={() => toggle(key)}
                   className="flex flex-col items-center rounded-lg bg-base-200 p-2 text-center transition-colors hover:bg-base-300"
                 >
-                  <ZodiacAnimalIcon
-                    sign={p.sign as ZodiacSign}
+                  <PlanetIcon
+                    name={p.name as PlanetName}
                     className="pointer-events-none"
                   />
                   <p className="flex items-center gap-1 text-[10px] text-base-content/50">

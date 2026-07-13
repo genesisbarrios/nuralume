@@ -56,16 +56,16 @@ const config: ConfigProps = {
         features: [
           { name: "Full healing music library" },
           { name: "Unlimited reminders" },
-          { name: "Full birth chart" },
+          { name: "Full birth chart & Human Design" },
           { name: "Numerology deep dive" },
         ],
       },
     ],
   },
   resend: {
-    fromNoReply: "Nuralume <noreply@nuralume.com>",
-    fromAdmin: "Nuralume <hello@nuralume.com>",
-    supportEmail: "support@nuralume.com",
+    fromNoReply: "Nuralume <nuralume@proton.me>",
+    fromAdmin: "Nuralume <nuralume@proton.me>",
+    supportEmail: "nuralume@proton.me",
   },
   colors: {
     theme: "nuralume",
