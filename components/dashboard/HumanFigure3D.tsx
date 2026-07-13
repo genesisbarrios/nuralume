@@ -1,8 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { PerspectiveCamera, Text, View } from "@react-three/drei";
 import { Bouncing } from "./BouncingOrb";
 import type { Center } from "@/libs/humanDesign";
+
+// Matches the app's existing mobile/desktop split (BottomNav etc. use
+// Tailwind's `lg` breakpoint, 1024px).
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 1023px)");
+    const update = () => setIsMobile(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return isMobile;
+}
 
 // Approximate bodygraph center positions mapped onto a simple humanoid
 // figure (front view). Not anatomically exact — close enough at icon scale
@@ -140,6 +155,7 @@ function CenterDots({
               position={[x, y, z]}
               onPointerOver={enter(center)}
               onPointerOut={leave}
+              onClick={enter(center)}
             >
               <sphereGeometry args={[isDefined ? 0.11 : 0.08, 16, 16]} />
               <meshStandardMaterial
@@ -165,6 +181,7 @@ function CenterDots({
               anchorY="middle"
               onPointerOver={enter(center)}
               onPointerOut={leave}
+              onClick={enter(center)}
             >
               {CENTER_LABEL[center]}
             </Text>
@@ -185,6 +202,7 @@ export default function HumanFigure3D({
   className?: string;
 }) {
   const defined = new Set(definedCenters);
+  const isMobile = useIsMobile();
 
   return (
     // Note: no pointer-events-none here (unlike the small decorative
@@ -200,6 +218,7 @@ export default function HumanFigure3D({
         bounceHeight={0.15}
         restY={-0.35}
         shadowRadius={0.55}
+        bounce={!isMobile}
         speed={1.2}
         spin={false}
       >

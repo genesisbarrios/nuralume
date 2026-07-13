@@ -718,7 +718,8 @@ function HumanDesignPanel({
                 onHoverCenter={setHoveredCenter}
               />
               <p className="mt-1 text-center text-[10px] text-base-content/40">
-                Hover a label for what it means for that center to be defined.
+                Hover or tap a label for what it means for that center to be
+                defined.
               </p>
               <div className="mt-3 min-h-[5.5rem] rounded-xl bg-base-200 p-4 text-sm">
                 {hoveredCenter ? (

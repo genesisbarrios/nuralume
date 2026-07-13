@@ -15,6 +15,7 @@ export function Bouncing({
   shadowRadius = 0.65,
   speed = 1.6,
   spin = true,
+  bounce: bounceEnabled = true,
 }: {
   phase: number;
   children: React.ReactNode;
@@ -23,15 +24,18 @@ export function Bouncing({
   shadowRadius?: number;
   speed?: number;
   spin?: boolean;
+  bounce?: boolean;
 }) {
   const bodyRef = useRef<Group>(null);
   const shadowRef = useRef<Mesh>(null);
 
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime() * speed + phase;
-    // abs(sin) mimics gravity: quick off the ground, slow at the peak, sharp
-    // impact back at the bottom — a cheap but convincing bounce curve.
-    const bounce = Math.abs(Math.sin(t));
+    // A moving target is hard to tap precisely (e.g. the Human Design
+    // figure's center dots on mobile) — bounce=false holds everything at
+    // its grounded resting pose instead of animating.
+    const bounce = bounceEnabled
+      ? Math.abs(Math.sin(clock.getElapsedTime() * speed + phase))
+      : 0;
 
     if (bodyRef.current) {
       bodyRef.current.position.y = restY + bounce * bounceHeight;
