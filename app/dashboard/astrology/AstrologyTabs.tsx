@@ -51,8 +51,8 @@ type Tab = "birth_chart" | "horoscope" | "numerology" | "human_design";
 const TAB_LABELS: Record<Tab, string> = {
   birth_chart: "Birth Chart",
   horoscope: "Horoscope",
-  numerology: "Numerology",
   human_design: "Human Design",
+  numerology: "Numerology",
 };
 
 const TAB_ICONS: Record<Tab, typeof Sun> = {

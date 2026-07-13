@@ -12,7 +12,18 @@ import { View } from "@react-three/drei";
 export default function AstroSceneRoot() {
   return (
     <Canvas
-      className="pointer-events-none fixed inset-0 z-0"
+      // R3F's Canvas sets position/width/height via an inline `style`
+      // attribute internally, which always wins over a className (no
+      // !important in Tailwind's utilities) — so the override has to go
+      // through `style`, not `className`, or it's silently ignored and the
+      // canvas stays in normal document flow instead of covering the
+      // viewport, which breaks View rendering entirely.
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: "none",
+      }}
       dpr={[1, 1.5]}
       gl={{ alpha: true, antialias: true }}
       eventSource={typeof document !== "undefined" ? document.body : undefined}
