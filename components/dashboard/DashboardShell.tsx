@@ -1,12 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import config from "@/config";
+import ButtonAccount from "@/components/ButtonAccount";
 import { DesktopNav, MobileNav } from "./BottomNav";
 
 export default function DashboardShell({
   children,
+  userEmail,
+  displayName,
 }: {
   children: React.ReactNode;
+  userEmail: string | null;
+  displayName: string | null;
 }) {
   return (
     <div className="min-h-screen bg-notebook-cover">
@@ -21,7 +26,12 @@ export default function DashboardShell({
           />
           {config.appName}
         </Link>
-        <span className="text-xs text-white/60">{config.tagline}</span>
+        <ButtonAccount
+          email={userEmail}
+          displayName={displayName}
+          showDashboardLink={false}
+          className="text-white hover:bg-white/10"
+        />
       </div>
 
       <div className="mx-auto mt-6 flex max-w-lg justify-center lg:max-w-4xl lg:items-stretch">

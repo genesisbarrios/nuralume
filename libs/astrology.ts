@@ -1,5 +1,6 @@
-import { getSignFromAbbreviation, getSunSignFromDate, type ZodiacSign } from "@/libs/zodiac";
-import { getAstroApiClient } from "@/libs/astroApiClient";
+import { getSunSignFromDate, type ZodiacSign } from "@/libs/zodiac";
+import { hasAstrologyApiKey, postAstrologyApi } from "@/libs/astrologyApiCom";
+import { geocodePlace, getUtcOffsetHours } from "@/libs/geocoding";
 
 export interface AstrologyResult {
   sunSign: ZodiacSign;
@@ -15,45 +16,61 @@ export interface BirthDataInput {
   countryCode?: string | null; // ISO 3166-1 alpha-2, e.g. "US"
 }
 
+interface Planet {
+  name: string;
+  sign: string;
+}
+
+interface HouseCusps {
+  houses: { house: number; sign: string; degree: number }[];
+}
+
 export async function getBirthChart(
   input: BirthDataInput
 ): Promise<AstrologyResult> {
   const sunSign = getSunSignFromDate(input.birthDate);
-  const client = getAstroApiClient();
 
-  if (!client || !input.birthTime || !input.city || !input.countryCode) {
+  if (!hasAstrologyApiKey() || !input.birthTime || !input.city) {
     return { sunSign, moonSign: null, risingSign: null, source: "fallback" };
   }
 
   try {
+    const geo = await geocodePlace(input.city, input.countryCode);
+    if (!geo || !geo.ianaTimezone) {
+      throw new Error("Could not geocode birth location");
+    }
+
+    const tzone = getUtcOffsetHours(
+      geo.ianaTimezone,
+      input.birthDate,
+      input.birthTime
+    );
+
     const [year, month, day] = input.birthDate.split("-").map(Number);
     const [hour, minute] = input.birthTime.split(":").map(Number);
+    const body = {
+      day,
+      month,
+      year,
+      hour,
+      min: minute,
+      lat: geo.lat,
+      lon: geo.lon,
+      tzone,
+    };
 
-    const { positions } = await client.data.getPositions({
-      subject: {
-        name: "Subject",
-        birth_data: {
-          year,
-          month,
-          day,
-          hour,
-          minute,
-          second: 0,
-          city: input.city,
-          country_code: input.countryCode,
-        },
-      },
-      // The API omits Ascendant unless explicitly requested via active_points.
-      options: { active_points: ["Sun", "Moon", "Ascendant"] },
-    });
+    const [planets, houseCusps] = await Promise.all([
+      postAstrologyApi<Planet[]>("planets/tropical", body),
+      postAstrologyApi<HouseCusps>("house_cusps/tropical", body),
+    ]);
 
-    const moon = positions.find((p) => p.name === "Moon");
-    const ascendant = positions.find((p) => p.name === "Ascendant");
+    const moon = planets.find((p) => p.name === "Moon");
+    const ascendantHouse = houseCusps.houses?.find((h) => h.house === 1);
 
     return {
       sunSign,
-      moonSign: moon ? getSignFromAbbreviation(moon.sign) : null,
-      risingSign: ascendant ? getSignFromAbbreviation(ascendant.sign) : null,
+      moonSign: moon?.sign ?? null,
+      risingSign: ascendantHouse?.sign ?? null,
       source: "api",
     };
   } catch (err) {

@@ -1,32 +1,19 @@
 import PageCard from "@/components/dashboard/PageCard";
 import {
-  getAstrocartographyForProfile,
-  getHoroscopeForProfile,
   getOrComputeBirthChart,
-  getOrComputeHumanDesign,
+  getOrComputeHoroscope,
   getOrComputeNumerology,
   getProfileBirthData,
-  getWellnessForProfile,
 } from "./actions";
 import AstrologyTabs from "./AstrologyTabs";
 
 export default async function AstrologyPage() {
   const profile = await getProfileBirthData();
 
-  const [
-    birthChart,
-    wellness,
-    horoscope,
-    astrocartography,
-    numerology,
-    humanDesign,
-  ] = await Promise.all([
+  const [birthChart, horoscope, numerology] = await Promise.all([
     getOrComputeBirthChart(),
-    getWellnessForProfile(),
-    getHoroscopeForProfile(),
-    getAstrocartographyForProfile(),
+    getOrComputeHoroscope(),
     getOrComputeNumerology(),
-    getOrComputeHumanDesign(),
   ]);
 
   return (
@@ -34,11 +21,8 @@ export default async function AstrologyPage() {
       <AstrologyTabs
         initialProfile={profile}
         initialBirthChart={birthChart}
-        initialWellness={wellness}
         initialHoroscope={horoscope}
-        initialAstrocartography={astrocartography}
         initialNumerology={numerology}
-        initialHumanDesign={humanDesign}
       />
     </PageCard>
   );

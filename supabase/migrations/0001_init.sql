@@ -24,6 +24,12 @@ create policy "profiles_select_own" on public.profiles
 create policy "profiles_update_own" on public.profiles
   for update using (auth.uid() = id) with check (auth.uid() = id);
 
+-- Lets saveBirthData's upsert self-heal if the auto-provisioning trigger
+-- below never ran for this user (e.g. account created before the trigger
+-- existed), instead of depending solely on the trigger for row creation.
+create policy "profiles_insert_own" on public.profiles
+  for insert with check (auth.uid() = id);
+
 -- Auto-provision a profile row whenever a new auth user signs up.
 create function public.handle_new_user()
 returns trigger
@@ -52,7 +58,7 @@ create table public.reminders (
   -- Category-tagged reminders get a rotating message throughout the day (see
   -- libs/reminderMessages.ts) instead of a fixed title-only checklist item.
   -- Null for freeform custom reminders.
-  category text check (category in ('hydration', 'nutrition', 'meditation', 'exercise')),
+  category text check (category in ('hydration', 'nutrition', 'meditation', 'exercise', 'grounding', 'coping_skills')),
   created_at timestamptz not null default now()
 );
 
@@ -116,7 +122,7 @@ create policy "affirmation_favorites_all_own" on public.affirmation_favorites
 create table public.personality_results (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
-  test_type text not null check (test_type in ('numerology', 'astrology', 'human_design', 'mbti', 'big_five')),
+  test_type text not null check (test_type in ('numerology', 'astrology', 'human_design', 'mbti', 'big_five', 'archetype', 'horoscope')),
   result jsonb not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

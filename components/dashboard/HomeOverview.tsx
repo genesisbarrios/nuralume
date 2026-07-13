@@ -6,6 +6,7 @@ import { BellRing, Check, Heart, Moon, Pencil, Sparkles } from "lucide-react";
 import PageCard from "@/components/dashboard/PageCard";
 import ApiFallbackNotice from "@/components/dashboard/ApiFallbackNotice";
 import BirthDataForm from "@/components/dashboard/BirthDataForm";
+import TaskTimer from "@/components/dashboard/TaskTimer";
 import type { ProfileBirthData } from "@/libs/profile";
 import { getProfileBirthData } from "@/libs/profile";
 import type { Affirmation } from "@/libs/affirmations";
@@ -53,14 +54,21 @@ export default function HomeOverview({
 
   const remaining = reminders.filter((r) => !r.isDone);
 
+  // Category reminders (the toggleable defaults) surface first so enabling
+  // one on the Reminders tab reliably shows it here too, not just whatever
+  // happened to be first by sort order.
+  const homeReminders = [...reminders]
+    .sort((a, b) => Number(!!b.category) - Number(!!a.category))
+    .slice(0, 6);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <PageCard title="Today's reminders">
         {reminders.length === 0 ? (
           <p className="text-sm text-base-content/60">No reminders yet.</p>
         ) : (
           <ul className="space-y-2">
-            {reminders.slice(0, 4).map((reminder) => (
+            {homeReminders.map((reminder) => (
               <li
                 key={reminder.id}
                 className="flex items-center justify-between rounded-lg bg-base-200 px-3 py-2"
@@ -79,12 +87,19 @@ export default function HomeOverview({
                   >
                     {reminder.isDone && <Check className="h-3 w-3" />}
                   </span>
-                  <span
-                    className={`text-sm ${
-                      reminder.isDone ? "text-base-content/50 line-through" : ""
-                    }`}
-                  >
-                    {reminder.title}
+                  <span className="flex flex-col">
+                    <span
+                      className={`text-sm ${
+                        reminder.isDone ? "text-base-content/50 line-through" : ""
+                      }`}
+                    >
+                      {reminder.title}
+                    </span>
+                    {reminder.message && !reminder.isDone && (
+                      <span className="text-xs text-base-content/50">
+                        {reminder.message}
+                      </span>
+                    )}
                   </span>
                 </button>
               </li>
@@ -142,7 +157,7 @@ export default function HomeOverview({
               {horoscope.sign}
             </p>
             <p className="rounded-xl bg-base-200 p-4 text-sm leading-relaxed">
-              {horoscope.text}
+              {horoscope.text.length > 200 ? `${horoscope.text.slice(0, 200)}...` : horoscope.text}
             </p>
           </div>
         ) : (
@@ -166,6 +181,7 @@ export default function HomeOverview({
               setEditingProfile(false);
               setProfile(await getProfileBirthData());
             }}
+            onCancel={() => setEditingProfile(false)}
           />
         ) : (
           <div>
@@ -199,6 +215,10 @@ export default function HomeOverview({
             </div>
           </div>
         )}
+      </PageCard>
+
+      <PageCard title="Task timer">
+        <TaskTimer />
       </PageCard>
     </div>
   );

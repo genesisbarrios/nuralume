@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/libs/supabase/server";
 import { scoreMbti, type MbtiResult } from "@/libs/mbti";
 import { scoreBigFive, type BigFiveResult } from "@/libs/bigFive";
+import { scoreArchetype, type ArchetypeResult } from "@/libs/archetype";
 import type { PersonalityTestType } from "@/types/database";
 
 async function getSavedResult(testType: PersonalityTestType) {
@@ -31,9 +32,9 @@ async function saveResult(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) throw new Error("You must be signed in to save results.");
 
-  await supabase.from("personality_results").upsert(
+  const { error } = await supabase.from("personality_results").upsert(
     {
       user_id: user.id,
       test_type: testType,
@@ -42,6 +43,11 @@ async function saveResult(
     },
     { onConflict: "user_id,test_type" }
   );
+
+  if (error) {
+    console.error(`[personality:${testType}] save failed:`, error);
+    throw new Error(error.message);
+  }
 }
 
 export async function getSavedMbti(): Promise<MbtiResult | null> {
@@ -68,6 +74,20 @@ export async function submitBigFiveQuiz(
 ): Promise<BigFiveResult> {
   const result = scoreBigFive(answers);
   await saveResult("big_five", result as unknown as Record<string, unknown>);
+  revalidatePath("/dashboard/personality");
+  return result;
+}
+
+export async function getSavedArchetype(): Promise<ArchetypeResult | null> {
+  const saved = await getSavedResult("archetype");
+  return saved as unknown as ArchetypeResult | null;
+}
+
+export async function submitArchetypeQuiz(
+  answers: Record<string, number>
+): Promise<ArchetypeResult> {
+  const result = scoreArchetype(answers);
+  await saveResult("archetype", result as unknown as Record<string, unknown>);
   revalidatePath("/dashboard/personality");
   return result;
 }

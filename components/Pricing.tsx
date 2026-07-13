@@ -50,14 +50,19 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <Link
-                href="/login"
-                className={`btn mt-8 w-full ${
-                  plan.price > 0 ? "btn-primary" : "btn-outline"
-                }`}
-              >
-                {plan.price > 0 ? "Upgrade" : "Get started"}
-              </Link>
+              {plan.price > 0 ? (
+                <button
+                  type="button"
+                  disabled
+                  className="btn btn-disabled mt-8 w-full"
+                >
+                  Coming soon
+                </button>
+              ) : (
+                <Link href="/login" className="btn btn-outline mt-8 w-full">
+                  Get started
+                </Link>
+              )}
             </div>
           ))}
         </div>

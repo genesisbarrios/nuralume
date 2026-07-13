@@ -1,11 +1,10 @@
 import type { ZodiacSign } from "@/libs/zodiac";
-import { getAstroApiClient } from "@/libs/astroApiClient";
+import { hasAstrologyApiKey, postAstrologyApi } from "@/libs/astrologyApiCom";
 
-export type HoroscopeFrequency = "daily" | "weekly";
+export type HoroscopeFrequency = "daily" | "weekly" | "monthly";
 
 export interface HoroscopeResult {
   sign: ZodiacSign;
-  date: string;
   text: string;
   frequency: HoroscopeFrequency;
   source: "api" | "fallback";
@@ -34,107 +33,69 @@ function getFallbackText(sign: ZodiacSign, date: Date): string {
   return FALLBACK_POOL[seed % FALLBACK_POOL.length];
 }
 
-export async function getDailyHoroscope(
-  sign: ZodiacSign,
-  date: Date = new Date()
-): Promise<HoroscopeResult> {
-  const isoDate = date.toISOString().slice(0, 10);
-  const client = getAstroApiClient();
-
-  if (!client) {
-    return {
-      sign,
-      date: isoDate,
-      text: getFallbackText(sign, date),
-      frequency: "daily",
-      source: "fallback",
-    };
-  }
-
-  try {
-    const result = await client.horoscope.getSignDailyHoroscopeText(
-      {
-        sign,
-        date: isoDate,
-        language: "en",
-        tradition: "universal",
-        format: "paragraph",
-      },
-      { signal: AbortSignal.timeout(8000) }
-    );
-
-    return {
-      sign,
-      date: isoDate,
-      text: result.text,
-      frequency: "daily",
-      source: "api",
-    };
-  } catch (err) {
-    console.error("[horoscope] falling back:", err);
-    return {
-      sign,
-      date: isoDate,
-      text: getFallbackText(sign, date),
-      frequency: "daily",
-      source: "fallback",
-    };
-  }
+interface DailyResponse {
+  prediction: Record<string, string> | string;
 }
 
-export async function getWeeklyHoroscope(
-  sign: ZodiacSign,
-  date: Date = new Date()
-): Promise<HoroscopeResult> {
-  const isoDate = date.toISOString().slice(0, 10);
-  const client = getAstroApiClient();
-
-  if (!client) {
-    return {
-      sign,
-      date: isoDate,
-      text: getFallbackText(sign, date),
-      frequency: "weekly",
-      source: "fallback",
-    };
-  }
-
-  try {
-    const result = await client.horoscope.getSignWeeklyHoroscopeText(
-      {
-        sign,
-        language: "en",
-        tradition: "universal",
-        format: "short",
-      },
-      { signal: AbortSignal.timeout(8000) }
-    );
-
-    return {
-      sign,
-      date: isoDate,
-      text: result.text,
-      frequency: "weekly",
-      source: "api",
-    };
-  } catch (err) {
-    console.error("[horoscope] falling back:", err);
-    return {
-      sign,
-      date: isoDate,
-      text: getFallbackText(sign, date),
-      frequency: "weekly",
-      source: "fallback",
-    };
-  }
+interface MultiParagraphResponse {
+  prediction: string[];
+  prediction_month?: string;
 }
+
+const ENDPOINTS: Record<HoroscopeFrequency, string> = {
+  daily: "sun_sign_prediction/daily",
+  weekly: "horoscope_prediction/weekly",
+  monthly: "horoscope_prediction/monthly",
+};
 
 export async function getHoroscope(
   sign: ZodiacSign,
   frequency: HoroscopeFrequency,
   date: Date = new Date()
 ): Promise<HoroscopeResult> {
-  return frequency === "weekly"
-    ? getWeeklyHoroscope(sign, date)
-    : getDailyHoroscope(sign, date);
+  if (!hasAstrologyApiKey()) {
+    return {
+      sign,
+      text: getFallbackText(sign, date),
+      frequency,
+      source: "fallback",
+    };
+  }
+
+  try {
+    const endpoint = `${ENDPOINTS[frequency]}/${sign.toLowerCase()}`;
+    const data = await postAstrologyApi<DailyResponse | MultiParagraphResponse>(
+      endpoint,
+      {}
+    );
+
+    let text: string;
+    if (Array.isArray((data as MultiParagraphResponse).prediction)) {
+      text = (data as MultiParagraphResponse).prediction.join(" ");
+    } else if (typeof (data as DailyResponse).prediction === "string") {
+      text = (data as DailyResponse).prediction as string;
+    } else {
+      text = Object.values(
+        (data as DailyResponse).prediction as Record<string, string>
+      ).join(" ");
+    }
+
+    // The monthly endpoint returns generic placeholder copy on our current
+    // plan tier ("This is sample monthly predictions...") regardless of
+    // sign — treat that the same as an unavailable API rather than showing
+    // it as a real reading.
+    if (!text || text.trim().toLowerCase().startsWith("this is sample")) {
+      throw new Error(`${frequency} horoscope returned placeholder content`);
+    }
+
+    return { sign, text, frequency, source: "api" };
+  } catch (err) {
+    console.error(`[horoscope:${frequency}] falling back:`, err);
+    return {
+      sign,
+      text: getFallbackText(sign, date),
+      frequency,
+      source: "fallback",
+    };
+  }
 }

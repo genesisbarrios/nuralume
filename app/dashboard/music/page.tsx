@@ -10,7 +10,7 @@ export default async function MusicPage() {
   ]);
 
   return (
-    <PageCard title="Healing Music">
+    <PageCard title="Sound Healing">
       <MusicTabs
         tracksByCategory={{
           brain_waves: brainWaves,

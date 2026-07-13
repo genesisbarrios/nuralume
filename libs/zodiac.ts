@@ -32,26 +32,6 @@ const SIGN_START_DATES: [ZodiacSign, number, number][] = [
   ["Capricorn", 12, 22],
 ];
 
-// AstroAPI returns signs as 3-letter abbreviations (e.g. "Ari", "Tau").
-const SIGN_ABBREVIATIONS: Record<string, ZodiacSign> = {
-  Ari: "Aries",
-  Tau: "Taurus",
-  Gem: "Gemini",
-  Can: "Cancer",
-  Leo: "Leo",
-  Vir: "Virgo",
-  Lib: "Libra",
-  Sco: "Scorpio",
-  Sag: "Sagittarius",
-  Cap: "Capricorn",
-  Aqu: "Aquarius",
-  Pis: "Pisces",
-};
-
-export function getSignFromAbbreviation(abbreviation: string): ZodiacSign | null {
-  return SIGN_ABBREVIATIONS[abbreviation] ?? null;
-}
-
 export function getSunSignFromDate(isoDate: string): ZodiacSign {
   const [, monthStr, dayStr] = isoDate.split("-");
   const month = Number(monthStr);

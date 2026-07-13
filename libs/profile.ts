@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/libs/supabase/server";
-import type { HoroscopeFrequency } from "@/libs/horoscope";
+// Narrower than libs/horoscope's HoroscopeFrequency (which also allows
+// "monthly" for browsing in the Astrology tab) — the profiles table's
+// horoscope_frequency column only supports daily/weekly for the Home page.
+export type HomeHoroscopeFrequency = "daily" | "weekly";
 
 export interface ProfileBirthData {
   displayName: string | null;
@@ -10,7 +13,7 @@ export interface ProfileBirthData {
   birthTime: string | null;
   birthCity: string | null;
   birthCountryCode: string | null;
-  horoscopeFrequency: HoroscopeFrequency;
+  horoscopeFrequency: HomeHoroscopeFrequency;
 }
 
 export async function getProfileBirthData(): Promise<ProfileBirthData | null> {
@@ -44,26 +47,45 @@ export async function saveBirthData(input: {
   birthTime?: string;
   birthCity?: string;
   birthCountryCode?: string;
-  horoscopeFrequency?: HoroscopeFrequency;
+  horoscopeFrequency?: HomeHoroscopeFrequency;
 }) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) throw new Error("You must be signed in to save your details.");
 
-  await supabase
+  // Upsert (not update) so this self-heals if the auto-provisioning trigger
+  // never created a profiles row for this user; .select() + checking for a
+  // returned row matters because RLS silently matches zero rows on a
+  // mismatched auth.uid() instead of raising an error.
+  const { data, error } = await supabase
     .from("profiles")
-    .update({
-      display_name: input.displayName,
-      birth_date: input.birthDate,
-      birth_time: input.birthTime || null,
-      birth_city: input.birthCity || null,
-      birth_country_code: input.birthCountryCode || null,
-      horoscope_frequency: input.horoscopeFrequency ?? "daily",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", user.id);
+    .upsert(
+      {
+        id: user.id,
+        display_name: input.displayName,
+        birth_date: input.birthDate,
+        birth_time: input.birthTime || null,
+        birth_city: input.birthCity || null,
+        birth_country_code: input.birthCountryCode || null,
+        horoscope_frequency: input.horoscopeFrequency ?? "daily",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    )
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("[saveBirthData] failed:", error);
+    throw new Error(error.message);
+  }
+  if (!data) {
+    throw new Error(
+      "Save didn't apply — try signing out and back in, then retry."
+    );
+  }
 
   revalidatePath("/dashboard/astrology");
   revalidatePath("/dashboard/home");

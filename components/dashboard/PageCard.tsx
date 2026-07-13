@@ -11,7 +11,7 @@ export default function PageCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-base-300/60 bg-base-100/90 p-5 shadow-sm ${className}`}
+      className={`rounded-2xl border border-base-300 bg-base-100 p-5 shadow-md ${className}`}
     >
       {title && (
         <h2 className="mb-3 font-handwritten text-2xl text-base-content">

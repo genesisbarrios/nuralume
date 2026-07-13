@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { ProfileBirthData } from "@/libs/profile";
+import toast from "react-hot-toast";
+import type { HomeHoroscopeFrequency, ProfileBirthData } from "@/libs/profile";
 import { saveBirthData } from "@/libs/profile";
-import type { HoroscopeFrequency } from "@/libs/horoscope";
 
 export default function BirthDataForm({
   initial,
   onSaved,
+  onCancel,
 }: {
   initial: ProfileBirthData | null;
   onSaved: () => void;
+  onCancel?: () => void;
 }) {
   const [displayName, setDisplayName] = useState(initial?.displayName ?? "");
   const [birthDate, setBirthDate] = useState(initial?.birthDate ?? "");
@@ -20,31 +22,38 @@ export default function BirthDataForm({
     initial?.birthCountryCode ?? ""
   );
   const [horoscopeFrequency, setHoroscopeFrequency] =
-    useState<HoroscopeFrequency>(initial?.horoscopeFrequency ?? "daily");
+    useState<HomeHoroscopeFrequency>(initial?.horoscopeFrequency ?? "daily");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!displayName.trim() || !birthDate) return;
     setIsSaving(true);
-    await saveBirthData({
-      displayName: displayName.trim(),
-      birthDate,
-      birthTime: birthTime || undefined,
-      birthCity: birthCity.trim() || undefined,
-      birthCountryCode: birthCountryCode.trim().toUpperCase() || undefined,
-      horoscopeFrequency,
-    });
-    setIsSaving(false);
-    onSaved();
+    try {
+      await saveBirthData({
+        displayName: displayName.trim(),
+        birthDate,
+        birthTime: birthTime || undefined,
+        birthCity: birthCity.trim() || undefined,
+        birthCountryCode: birthCountryCode.trim().toUpperCase() || undefined,
+        horoscopeFrequency,
+      });
+      onSaved();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't save your details."
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <p className="text-sm text-base-content/70">
         Your full name and birth date power numerology and your sun sign
-        instantly. Add a birth time, city, and country for your full
-        astrology chart, wellness insight, and astrocartography.
+        instantly. Add a birth time and city for your full astrology chart
+        and horoscope.
       </p>
 
       <label className="form-control">
@@ -117,7 +126,7 @@ export default function BirthDataForm({
           className="select select-bordered select-sm"
           value={horoscopeFrequency}
           onChange={(e) =>
-            setHoroscopeFrequency(e.target.value as HoroscopeFrequency)
+            setHoroscopeFrequency(e.target.value as HomeHoroscopeFrequency)
           }
         >
           <option value="daily">Daily</option>
@@ -125,13 +134,24 @@ export default function BirthDataForm({
         </select>
       </label>
 
-      <button
-        type="submit"
-        disabled={isSaving}
-        className="btn btn-primary btn-sm w-full"
-      >
-        {isSaving ? "Saving..." : "Save details"}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={isSaving}
+          className="btn btn-primary btn-sm flex-1"
+        >
+          {isSaving ? "Saving..." : "Save details"}
+        </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="btn btn-ghost btn-sm"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }

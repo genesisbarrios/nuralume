@@ -1,80 +1,52 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Fingerprint, Globe2, Hash, Moon, RefreshCw, Sun } from "lucide-react";
+import { Hash, Moon, RefreshCw, Sun } from "lucide-react";
 import ApiFallbackNotice from "@/components/dashboard/ApiFallbackNotice";
 import BirthDataForm from "@/components/dashboard/BirthDataForm";
 import type { NumerologyProfile } from "@/libs/numerology";
 import type { AstrologyResult } from "@/libs/astrology";
-import type { WellnessInsightResult } from "@/libs/wellnessInsights";
-import type { AstrocartographyResult } from "@/libs/astrocartography";
-import type { HoroscopeResult } from "@/libs/horoscope";
-import type { HumanDesignResult } from "@/libs/humanDesign";
-import { HUMAN_DESIGN_TYPES } from "@/libs/humanDesign";
+import type { HoroscopeFrequency } from "@/libs/horoscope";
 import type { ProfileBirthData } from "@/libs/profile";
 import { getProfileBirthData } from "@/libs/profile";
 import {
-  getAstrocartographyForProfile,
-  getHoroscopeForProfile,
   getOrComputeBirthChart,
-  getOrComputeHumanDesign,
+  getOrComputeHoroscope,
   getOrComputeNumerology,
-  getWellnessForProfile,
+  type HoroscopeBundle,
 } from "./actions";
 
-type Tab =
-  | "birth_chart"
-  | "horoscope"
-  | "astrocartography"
-  | "numerology"
-  | "human_design";
+type Tab = "birth_chart" | "horoscope" | "numerology";
 
 const TAB_LABELS: Record<Tab, string> = {
   birth_chart: "Birth Chart",
   horoscope: "Horoscope",
-  astrocartography: "Astrocartography",
   numerology: "Numerology",
-  human_design: "Human Design",
 };
 
 const TAB_ICONS: Record<Tab, typeof Sun> = {
   birth_chart: Sun,
   horoscope: Moon,
-  astrocartography: Globe2,
   numerology: Hash,
-  human_design: Fingerprint,
 };
 
 export default function AstrologyTabs({
   initialProfile,
   initialBirthChart,
-  initialWellness,
   initialHoroscope,
-  initialAstrocartography,
   initialNumerology,
-  initialHumanDesign,
 }: {
   initialProfile: ProfileBirthData | null;
   initialBirthChart: AstrologyResult | null;
-  initialWellness: WellnessInsightResult | null;
-  initialHoroscope: HoroscopeResult | null;
-  initialAstrocartography: AstrocartographyResult | null;
+  initialHoroscope: HoroscopeBundle | null;
   initialNumerology: NumerologyProfile | null;
-  initialHumanDesign: HumanDesignResult;
 }) {
   const [tab, setTab] = useState<Tab>("birth_chart");
   const [profile, setProfile] = useState(initialProfile);
-  const [editingForm, setEditingForm] = useState(
-    !initialProfile?.displayName || !initialProfile?.birthDate
-  );
+  const [editingForm, setEditingForm] = useState(false);
   const [birthChart, setBirthChart] = useState(initialBirthChart);
-  const [wellness, setWellness] = useState(initialWellness);
   const [horoscope, setHoroscope] = useState(initialHoroscope);
-  const [astrocartography, setAstrocartography] = useState(
-    initialAstrocartography
-  );
   const [numerology, setNumerology] = useState(initialNumerology);
-  const [humanDesign, setHumanDesign] = useState(initialHumanDesign);
   const [isPending, startTransition] = useTransition();
 
   const hasBirthData = Boolean(profile?.displayName && profile?.birthDate);
@@ -82,20 +54,11 @@ export default function AstrologyTabs({
   const refresh = (target: Tab) => {
     startTransition(async () => {
       if (target === "birth_chart") {
-        const [chart, wellnessResult] = await Promise.all([
-          getOrComputeBirthChart(true),
-          getWellnessForProfile(),
-        ]);
-        setBirthChart(chart);
-        setWellness(wellnessResult);
+        setBirthChart(await getOrComputeBirthChart(true));
       } else if (target === "horoscope") {
-        setHoroscope(await getHoroscopeForProfile());
-      } else if (target === "astrocartography") {
-        setAstrocartography(await getAstrocartographyForProfile());
-      } else if (target === "numerology") {
-        setNumerology(await getOrComputeNumerology(true));
+        setHoroscope(await getOrComputeHoroscope(true));
       } else {
-        setHumanDesign(await getOrComputeHumanDesign(true));
+        setNumerology(await getOrComputeNumerology(true));
       }
     });
   };
@@ -105,14 +68,12 @@ export default function AstrologyTabs({
     setProfile(await getProfileBirthData());
     refresh("birth_chart");
     refresh("horoscope");
-    refresh("astrocartography");
     refresh("numerology");
-    refresh("human_design");
   };
 
   return (
     <div>
-      <div className="mb-4 grid grid-cols-5 gap-1 rounded-xl bg-base-200 p-1">
+      <div className="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-base-200 p-1">
         {(Object.keys(TAB_LABELS) as Tab[]).map((t) => {
           const Icon = TAB_ICONS[t];
           const isActive = tab === t;
@@ -120,7 +81,6 @@ export default function AstrologyTabs({
             <button
               key={t}
               type="button"
-              title={TAB_LABELS[t]}
               onClick={() => setTab(t)}
               className={`flex flex-col items-center gap-1 rounded-lg py-2 transition-colors ${
                 isActive
@@ -129,64 +89,79 @@ export default function AstrologyTabs({
               }`}
             >
               <Icon className="h-4 w-4" />
-              <span className="px-0.5 text-center text-[9px] leading-tight">
-                {TAB_LABELS[t]}
-              </span>
+              <span className="text-xs">{TAB_LABELS[t]}</span>
             </button>
           );
         })}
       </div>
 
-      {!hasBirthData || editingForm ? (
-        <BirthDataForm initial={profile} onSaved={handleSaved} />
+      {editingForm ? (
+        <BirthDataForm
+          initial={profile}
+          onSaved={handleSaved}
+          onCancel={hasBirthData ? () => setEditingForm(false) : undefined}
+        />
       ) : (
         <>
-          <button
-            type="button"
-            onClick={() => setEditingForm(true)}
-            className="mb-3 text-xs text-primary underline"
-          >
-            Edit birth details
-          </button>
+          {hasBirthData && (
+            <button
+              type="button"
+              onClick={() => setEditingForm(true)}
+              className="mb-3 text-xs text-primary underline"
+            >
+              Edit birth details
+            </button>
+          )}
 
-          {tab === "birth_chart" && (
-            <BirthChartPanel
-              result={birthChart}
-              wellness={wellness}
-              isPending={isPending}
-              onRefresh={() => refresh("birth_chart")}
-            />
-          )}
-          {tab === "horoscope" && (
-            <HoroscopePanel
-              result={horoscope}
-              isPending={isPending}
-              onRefresh={() => refresh("horoscope")}
-            />
-          )}
-          {tab === "astrocartography" && (
-            <AstrocartographyPanel
-              result={astrocartography}
-              isPending={isPending}
-              onRefresh={() => refresh("astrocartography")}
-            />
-          )}
-          {tab === "numerology" && (
-            <NumerologyPanel
-              result={numerology}
-              isPending={isPending}
-              onRefresh={() => refresh("numerology")}
-            />
-          )}
-          {tab === "human_design" && (
-            <HumanDesignPanel
-              result={humanDesign}
-              isPending={isPending}
-              onRefresh={() => refresh("human_design")}
-            />
-          )}
+          {tab === "birth_chart" &&
+            (hasBirthData ? (
+              <BirthChartPanel
+                result={birthChart}
+                isPending={isPending}
+                onRefresh={() => refresh("birth_chart")}
+              />
+            ) : (
+              <NeedsBirthData onAdd={() => setEditingForm(true)} />
+            ))}
+          {tab === "horoscope" &&
+            (hasBirthData ? (
+              <HoroscopePanel
+                bundle={horoscope}
+                isPending={isPending}
+                onRefresh={() => refresh("horoscope")}
+              />
+            ) : (
+              <NeedsBirthData onAdd={() => setEditingForm(true)} />
+            ))}
+          {tab === "numerology" &&
+            (hasBirthData ? (
+              <NumerologyPanel
+                result={numerology}
+                isPending={isPending}
+                onRefresh={() => refresh("numerology")}
+              />
+            ) : (
+              <NeedsBirthData onAdd={() => setEditingForm(true)} />
+            ))}
         </>
       )}
+    </div>
+  );
+}
+
+function NeedsBirthData({ onAdd }: { onAdd: () => void }) {
+  return (
+    <div className="rounded-xl bg-base-200 p-6 text-center">
+      <p className="text-sm text-base-content/70">
+        Add your name and birth date to see this.
+      </p>
+      <button
+        type="button"
+        onClick={onAdd}
+        className="btn btn-primary btn-sm mt-4"
+      >
+        Add birth details
+      </button>
     </div>
   );
 }
@@ -213,12 +188,10 @@ function RefreshButton({
 
 function BirthChartPanel({
   result,
-  wellness,
   isPending,
   onRefresh,
 }: {
   result: AstrologyResult | null;
-  wellness: WellnessInsightResult | null;
   isPending: boolean;
   onRefresh: () => void;
 }) {
@@ -229,7 +202,7 @@ function BirthChartPanel({
   return (
     <div>
       {result.source === "fallback" && (
-        <ApiFallbackNotice message="Showing your sun sign only — add a birth time, city, and country for your full chart." />
+        <ApiFallbackNotice message="Showing your sun sign only — add a birth time and city for your full chart." />
       )}
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="rounded-xl bg-base-200 p-4">
@@ -251,42 +224,49 @@ function BirthChartPanel({
           <p className="mt-1 text-xs text-base-content/60">Rising</p>
         </div>
       </div>
-
-      {wellness?.insight && (
-        <div className="mt-4">
-          <p className="mb-2 font-handwritten text-lg">Wellness insight</p>
-          {wellness.source === "fallback" && <ApiFallbackNotice />}
-          <div className="rounded-xl bg-base-200 p-4">
-            {wellness.overallScore != null && (
-              <p className="mb-2 text-sm font-semibold">
-                Overall wellness score: {wellness.overallScore}/100
-              </p>
-            )}
-            <p className="text-sm leading-relaxed">{wellness.insight}</p>
-          </div>
-        </div>
-      )}
-
       <RefreshButton onRefresh={onRefresh} isPending={isPending} />
     </div>
   );
 }
 
+const FREQUENCY_LABELS: Record<HoroscopeFrequency, string> = {
+  daily: "Daily",
+  weekly: "Weekly",
+  monthly: "Monthly",
+};
+
 function HoroscopePanel({
-  result,
+  bundle,
   isPending,
   onRefresh,
 }: {
-  result: HoroscopeResult | null;
+  bundle: HoroscopeBundle | null;
   isPending: boolean;
   onRefresh: () => void;
 }) {
-  if (!result) {
+  const [frequency, setFrequency] = useState<HoroscopeFrequency>("daily");
+
+  if (!bundle) {
     return <p className="text-sm text-base-content/60">Calculating...</p>;
   }
 
+  const result = bundle[frequency];
+
   return (
     <div>
+      <div className="tabs tabs-boxed mb-3 justify-center bg-base-200">
+        {(Object.keys(FREQUENCY_LABELS) as HoroscopeFrequency[]).map((f) => (
+          <button
+            key={f}
+            type="button"
+            className={`tab tab-sm ${frequency === f ? "tab-active" : ""}`}
+            onClick={() => setFrequency(f)}
+          >
+            {FREQUENCY_LABELS[f]}
+          </button>
+        ))}
+      </div>
+
       {result.source === "fallback" && <ApiFallbackNotice />}
       <p className="mb-2 text-center font-handwritten text-2xl">
         {result.sign}
@@ -294,92 +274,6 @@ function HoroscopePanel({
       <p className="rounded-xl bg-base-200 p-5 text-center text-sm leading-relaxed">
         {result.text}
       </p>
-      <RefreshButton onRefresh={onRefresh} isPending={isPending} />
-    </div>
-  );
-}
-
-function AstrocartographyPanel({
-  result,
-  isPending,
-  onRefresh,
-}: {
-  result: AstrocartographyResult | null;
-  isPending: boolean;
-  onRefresh: () => void;
-}) {
-  if (!result) {
-    return <p className="text-sm text-base-content/60">Calculating...</p>;
-  }
-
-  if (result.highlights.length === 0) {
-    return (
-      <div>
-        <ApiFallbackNotice message="Add a birth time, city, and country for your astrocartography highlights." />
-        <RefreshButton onRefresh={onRefresh} isPending={isPending} />
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="space-y-2">
-        {result.highlights.map((h, i) => (
-          <div
-            key={`${h.planet}-${h.lineType}-${i}`}
-            className="rounded-xl bg-base-200 p-3 text-sm"
-          >
-            <span className="font-semibold">
-              {h.planet} {h.lineType}
-            </span>{" "}
-            — {h.meaning}
-          </div>
-        ))}
-      </div>
-      <RefreshButton onRefresh={onRefresh} isPending={isPending} />
-    </div>
-  );
-}
-
-function HumanDesignPanel({
-  result,
-  isPending,
-  onRefresh,
-}: {
-  result: HumanDesignResult;
-  isPending: boolean;
-  onRefresh: () => void;
-}) {
-  if (result.source === "api") {
-    return (
-      <div>
-        <div className="rounded-xl bg-base-200 p-5 text-center">
-          <p className="font-handwritten text-2xl text-primary">
-            {result.type}
-          </p>
-          <p className="mt-2 text-sm">Strategy: {result.strategy}</p>
-          <p className="text-sm">Authority: {result.authority}</p>
-          <p className="text-sm">Profile: {result.profile}</p>
-        </div>
-        <RefreshButton onRefresh={onRefresh} isPending={isPending} />
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <ApiFallbackNotice message="A personal Human Design chart isn't available yet — here's an overview of the five types:" />
-      <div className="space-y-3">
-        {HUMAN_DESIGN_TYPES.map((t) => (
-          <div key={t.type} className="rounded-xl bg-base-200 p-4">
-            <p className="font-handwritten text-lg text-primary">{t.type}</p>
-            <p className="text-xs italic text-base-content/60">
-              Strategy: {t.strategy}
-            </p>
-            <p className="mt-1 text-sm">{t.description}</p>
-          </div>
-        ))}
-      </div>
       <RefreshButton onRefresh={onRefresh} isPending={isPending} />
     </div>
   );

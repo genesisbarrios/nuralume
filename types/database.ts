@@ -3,13 +3,17 @@ export type PersonalityTestType =
   | "astrology"
   | "human_design"
   | "mbti"
-  | "big_five";
+  | "big_five"
+  | "archetype"
+  | "horoscope";
 export type TrackCategory = "brain_waves" | "solfeggio" | "binaural_beats";
 export type ReminderCategory =
   | "hydration"
   | "nutrition"
   | "meditation"
-  | "exercise";
+  | "exercise"
+  | "grounding"
+  | "coping_skills";
 
 export interface Database {
   public: {

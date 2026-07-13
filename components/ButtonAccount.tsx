@@ -6,7 +6,17 @@ import Link from "next/link";
 import { LayoutDashboard, LogOut, User } from "lucide-react";
 import { createClient } from "@/libs/supabase/client";
 
-export default function ButtonAccount({ email }: { email: string | null }) {
+export default function ButtonAccount({
+  email,
+  displayName,
+  showDashboardLink = true,
+  className = "",
+}: {
+  email: string | null;
+  displayName?: string | null;
+  showDashboardLink?: boolean;
+  className?: string;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
@@ -21,20 +31,22 @@ export default function ButtonAccount({ email }: { email: string | null }) {
     <div className="dropdown dropdown-end">
       <button
         type="button"
-        className="btn btn-ghost btn-sm gap-2"
+        className={`btn btn-ghost btn-sm gap-2 ${className}`}
         onClick={() => setIsOpen((v) => !v)}
       >
         <User className="h-4 w-4" />
-        <span className="max-w-[140px] truncate">{email}</span>
+        <span className="max-w-[140px] truncate">{displayName || email}</span>
       </button>
       {isOpen && (
         <ul className="menu dropdown-content z-20 mt-2 w-52 rounded-box bg-base-100 p-2 shadow">
-          <li>
-            <Link href="/dashboard/home" onClick={() => setIsOpen(false)}>
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </Link>
-          </li>
+          {showDashboardLink && (
+            <li>
+              <Link href="/dashboard/home" onClick={() => setIsOpen(false)}>
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Link>
+            </li>
+          )}
           <li>
             <button type="button" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
