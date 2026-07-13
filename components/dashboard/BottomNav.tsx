@@ -75,7 +75,7 @@ export function DesktopNav() {
 
   return (
     <nav
-      className="z-10 hidden shrink-0 lg:flex lg:w-20 lg:flex-col lg:items-end lg:justify-center lg:gap-5 lg:py-10"
+      className="z-10 hidden shrink-0 lg:sticky lg:top-24 lg:flex lg:w-20 lg:flex-col lg:items-end lg:self-start lg:gap-5 lg:py-10"
       aria-label="Dashboard navigation"
     >
       {tabs.map((tab, index) => {

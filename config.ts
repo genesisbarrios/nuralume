@@ -33,7 +33,7 @@ const config: ConfigProps = {
   appDescription:
     "Healing music, daily affirmations, reminders, horoscope, and personality insights in one calming space.",
   tagline: "tune your mind.",
-  domainName: "nuralume.com",
+  domainName: "nuralume.xyz",
   stripe: {
     plans: [
       {
