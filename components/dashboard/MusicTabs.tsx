@@ -26,13 +26,17 @@ export default function MusicTabs({
         <FloatingCrystal className="pointer-events-none opacity-90" />
       </div>
 
-      <div className="tabs tabs-boxed mb-4 justify-center bg-base-200">
+      <div className="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-base-200 p-1">
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
             type="button"
-            className={`tab ${category === cat ? "tab-active" : ""}`}
             onClick={() => setCategory(cat)}
+            className={`rounded-lg px-1 py-2 text-center text-xs font-medium transition-colors ${
+              category === cat
+                ? "bg-base-100 text-primary shadow-sm"
+                : "text-base-content/60 hover:text-base-content"
+            }`}
           >
             {CATEGORY_LABELS[cat]}
           </button>

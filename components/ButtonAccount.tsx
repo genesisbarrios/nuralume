@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { createClient } from "@/libs/supabase/client";
 
 export default function ButtonAccount({
@@ -27,6 +27,24 @@ export default function ButtonAccount({
     router.refresh();
   };
 
+  // Outside the dashboard (marketing header): the name/email is just a
+  // direct link there — no dropdown. A nested dropdown-in-a-dropdown (the
+  // mobile hamburger menu already toggles open/closed) was unreliable on
+  // mobile and required two taps for the one thing people actually want.
+  if (showDashboardLink) {
+    return (
+      <Link
+        href="/dashboard/home"
+        className={`btn btn-ghost btn-sm gap-2 ${className}`}
+      >
+        <User className="h-4 w-4" />
+        <span className="max-w-[140px] truncate">{displayName || email}</span>
+      </Link>
+    );
+  }
+
+  // Inside the dashboard: already on the dashboard, so the only useful
+  // action here is signing out.
   return (
     <div className="dropdown dropdown-end">
       <button
@@ -39,14 +57,6 @@ export default function ButtonAccount({
       </button>
       {isOpen && (
         <ul className="menu dropdown-content z-20 mt-2 w-52 rounded-box bg-base-100 p-2 shadow">
-          {showDashboardLink && (
-            <li>
-              <Link href="/dashboard/home" onClick={() => setIsOpen(false)}>
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
-              </Link>
-            </li>
-          )}
           <li>
             <button type="button" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
