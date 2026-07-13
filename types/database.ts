@@ -7,6 +7,7 @@ export type PersonalityTestType =
   | "archetype"
   | "horoscope";
 export type TrackCategory = "brain_waves" | "solfeggio" | "binaural_beats";
+export type TrackSubcategory = "alpha" | "beta" | "delta" | "theta" | "gamma";
 export type ReminderCategory =
   | "hydration"
   | "nutrition"
@@ -119,6 +120,7 @@ export interface Database {
           id: string;
           title: string;
           category: TrackCategory;
+          subcategory: TrackSubcategory | null;
           label: string;
           storage_path: string;
           duration_seconds: number | null;

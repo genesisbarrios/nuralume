@@ -1,14 +1,47 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import { Music2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import type { Track } from "@/libs/trackCategories";
+import { SUBCATEGORY_FALLBACK_IMAGE } from "@/libs/trackCategories";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds)) return "0:00";
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function TrackArt({ track, className }: { track: Track; className: string }) {
+  const fallback = track.subcategory
+    ? SUBCATEGORY_FALLBACK_IMAGE[track.subcategory]
+    : null;
+  const [src, setSrc] = useState(track.albumArt ?? fallback);
+
+  useEffect(() => {
+    setSrc(track.albumArt ?? fallback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [track.id]);
+
+  if (!src) {
+    return (
+      <div
+        className={`flex shrink-0 items-center justify-center rounded-md bg-base-300 text-base-content/40 ${className}`}
+      >
+        <Music2 className="h-1/2 w-1/2" />
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      className={`shrink-0 rounded-md object-cover ${className}`}
+      onError={() => setSrc(null)}
+    />
+  );
 }
 
 export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
@@ -70,8 +103,13 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
       />
 
       <div className="rounded-xl bg-base-200 p-4">
-        <p className="text-sm font-semibold">{current.title}</p>
-        <p className="text-xs text-base-content/60">{current.label}</p>
+        <div className="flex items-center gap-3">
+          <TrackArt track={current} className="h-14 w-14" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{current.title}</p>
+            <p className="truncate text-xs text-base-content/60">{current.label}</p>
+          </div>
+        </div>
 
         <input
           type="range"
@@ -141,13 +179,14 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
             <button
               type="button"
               onClick={() => playIndex(index)}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                 index === currentIndex
                   ? "bg-primary/10 text-primary"
                   : "hover:bg-base-200"
               }`}
             >
-              <span>
+              <TrackArt track={track} className="h-9 w-9" />
+              <span className="min-w-0 flex-1 truncate">
                 {track.title}{" "}
                 <span className="text-base-content/50">— {track.label}</span>
               </span>

@@ -1,6 +1,7 @@
 import { createClient } from "@/libs/supabase/server";
 import type { TrackCategory } from "@/types/database";
 import type { Track } from "@/libs/trackCategories";
+import { getAlbumArt } from "@/libs/albumArt";
 
 export async function getTracksByCategory(
   category: TrackCategory
@@ -8,7 +9,7 @@ export async function getTracksByCategory(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("tracks")
-    .select("id, title, label, storage_path, duration_seconds")
+    .select("id, title, label, storage_path, duration_seconds, subcategory")
     .eq("category", category)
     .order("sort_order", { ascending: true });
 
@@ -16,17 +17,23 @@ export async function getTracksByCategory(
     return [];
   }
 
-  return data.map((track) => {
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("healing-music").getPublicUrl(track.storage_path);
+  return Promise.all(
+    data.map(async (track) => {
+      const {
+        data: { publicUrl },
+      } = supabase.storage
+        .from("healing-music")
+        .getPublicUrl(track.storage_path);
 
-    return {
-      id: track.id,
-      title: track.title,
-      label: track.label,
-      url: publicUrl,
-      durationSeconds: track.duration_seconds,
-    };
-  });
+      return {
+        id: track.id,
+        title: track.title,
+        label: track.label,
+        url: publicUrl,
+        durationSeconds: track.duration_seconds,
+        subcategory: track.subcategory,
+        albumArt: await getAlbumArt(publicUrl),
+      };
+    })
+  );
 }
