@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import dynamic from "next/dynamic";
-import { ChevronDown, Hash, Moon, PersonStanding, RefreshCw, Sun } from "lucide-react";
+import { ChevronDown, Hash, Moon, Pencil, PersonStanding, RefreshCw, Sun } from "lucide-react";
 import ApiFallbackNotice from "@/components/dashboard/ApiFallbackNotice";
 import BirthDataForm from "@/components/dashboard/BirthDataForm";
 import type { CelestialVariant } from "@/components/dashboard/CelestialOrb";
@@ -51,8 +51,8 @@ type Tab = "birth_chart" | "horoscope" | "numerology" | "human_design";
 const TAB_LABELS: Record<Tab, string> = {
   birth_chart: "Birth Chart",
   horoscope: "Horoscope",
-  human_design: "Human Design",
   numerology: "Numerology",
+  human_design: "Human Design",
 };
 
 const TAB_ICONS: Record<Tab, typeof Sun> = {
@@ -142,22 +142,13 @@ export default function AstrologyTabs({
         />
       ) : (
         <>
-          {hasBirthData && (
-            <button
-              type="button"
-              onClick={() => setEditingForm(true)}
-              className="mb-3 text-xs text-primary underline"
-            >
-              Edit birth details
-            </button>
-          )}
-
           {tab === "birth_chart" &&
             (hasBirthData ? (
               <BirthChartPanel
                 result={birthChart}
                 isPending={isPending}
                 onRefresh={() => refresh("birth_chart")}
+                onEdit={() => setEditingForm(true)}
               />
             ) : (
               <NeedsBirthData onAdd={() => setEditingForm(true)} />
@@ -168,6 +159,7 @@ export default function AstrologyTabs({
                 bundle={horoscope}
                 isPending={isPending}
                 onRefresh={() => refresh("horoscope")}
+                onEdit={() => setEditingForm(true)}
               />
             ) : (
               <NeedsBirthData onAdd={() => setEditingForm(true)} />
@@ -178,6 +170,7 @@ export default function AstrologyTabs({
                 result={numerology}
                 isPending={isPending}
                 onRefresh={() => refresh("numerology")}
+                onEdit={() => setEditingForm(true)}
               />
             ) : (
               <NeedsBirthData onAdd={() => setEditingForm(true)} />
@@ -188,6 +181,7 @@ export default function AstrologyTabs({
                 result={humanDesign}
                 isPending={isPending}
                 onRefresh={() => refresh("human_design")}
+                onEdit={() => setEditingForm(true)}
               />
             ) : (
               <NeedsBirthData onAdd={() => setEditingForm(true)} />
@@ -218,20 +212,32 @@ function NeedsBirthData({ onAdd }: { onAdd: () => void }) {
 function RefreshButton({
   onRefresh,
   isPending,
+  onEdit,
 }: {
   onRefresh: () => void;
   isPending: boolean;
+  onEdit: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onRefresh}
-      disabled={isPending}
-      className="btn btn-ghost btn-xs mt-3 gap-1"
-    >
-      <RefreshCw className={`h-3 w-3 ${isPending ? "animate-spin" : ""}`} />
-      Refresh
-    </button>
+    <div className="mt-3 flex items-center gap-2">
+      <button
+        type="button"
+        onClick={onRefresh}
+        disabled={isPending}
+        className="btn btn-ghost btn-xs gap-1"
+      >
+        <RefreshCw className={`h-3 w-3 ${isPending ? "animate-spin" : ""}`} />
+        Refresh
+      </button>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="btn btn-ghost btn-xs gap-1"
+      >
+        <Pencil className="h-3 w-3" />
+        Edit
+      </button>
+    </div>
   );
 }
 
@@ -293,10 +299,12 @@ function BirthChartPanel({
   result,
   isPending,
   onRefresh,
+  onEdit,
 }: {
   result: AstrologyResult | null;
   isPending: boolean;
   onRefresh: () => void;
+  onEdit: () => void;
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const toggle = (key: string) =>
@@ -487,7 +495,7 @@ function BirthChartPanel({
         </div>
       )}
 
-      <RefreshButton onRefresh={onRefresh} isPending={isPending} />
+      <RefreshButton onRefresh={onRefresh} isPending={isPending} onEdit={onEdit} />
     </div>
   );
 }
@@ -501,10 +509,12 @@ function HoroscopePanel({
   bundle,
   isPending,
   onRefresh,
+  onEdit,
 }: {
   bundle: HoroscopeBundle | null;
   isPending: boolean;
   onRefresh: () => void;
+  onEdit: () => void;
 }) {
   const [frequency, setFrequency] = useState<HoroscopeFrequency>("daily");
 
@@ -538,7 +548,7 @@ function HoroscopePanel({
       <p className="rounded-xl bg-base-200 p-5 text-center text-sm leading-relaxed">
         {result.text}
       </p>
-      <RefreshButton onRefresh={onRefresh} isPending={isPending} />
+      <RefreshButton onRefresh={onRefresh} isPending={isPending} onEdit={onEdit} />
     </div>
   );
 }
@@ -547,10 +557,12 @@ function NumerologyPanel({
   result,
   isPending,
   onRefresh,
+  onEdit,
 }: {
   result: NumerologyProfile | null;
   isPending: boolean;
   onRefresh: () => void;
+  onEdit: () => void;
 }) {
   if (!result) {
     return <p className="text-sm text-base-content/60">Calculating...</p>;
@@ -587,7 +599,7 @@ function NumerologyPanel({
           </p>
         ))}
       </div>
-      <RefreshButton onRefresh={onRefresh} isPending={isPending} />
+      <RefreshButton onRefresh={onRefresh} isPending={isPending} onEdit={onEdit} />
     </div>
   );
 }
@@ -596,10 +608,12 @@ function HumanDesignPanel({
   result,
   isPending,
   onRefresh,
+  onEdit,
 }: {
   result: HumanDesignResult | null;
   isPending: boolean;
   onRefresh: () => void;
+  onEdit: () => void;
 }) {
   if (!result) {
     return <p className="text-sm text-base-content/60">Calculating...</p>;
@@ -656,7 +670,7 @@ function HumanDesignPanel({
           )}
         </>
       )}
-      <RefreshButton onRefresh={onRefresh} isPending={isPending} />
+      <RefreshButton onRefresh={onRefresh} isPending={isPending} onEdit={onEdit} />
     </div>
   );
 }

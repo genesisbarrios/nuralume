@@ -93,7 +93,7 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
   };
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <audio
         ref={audioRef}
         src={current.url}
@@ -105,7 +105,7 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
       <div className="rounded-xl bg-base-200 p-4">
         <div className="flex items-center gap-3">
           <TrackArt track={current} className="h-14 w-14" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{current.title}</p>
             <p className="truncate text-xs text-base-content/60">
               {current.artist ? `${current.artist} • ${current.label}` : current.label}
@@ -123,7 +123,7 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
             if (audioRef.current) audioRef.current.currentTime = value;
             setProgress(value);
           }}
-          className="range range-primary range-xs mt-3"
+          className="range range-primary range-xs mt-3 w-full"
         />
         <div className="flex justify-between text-[10px] text-base-content/50">
           <span>{formatTime(progress)}</span>
@@ -170,7 +170,7 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
             step={0.01}
             value={volume}
             onChange={(e) => setVolume(Number(e.target.value))}
-            className="range range-xs"
+            className="range range-xs w-full"
           />
         </div>
       </div>

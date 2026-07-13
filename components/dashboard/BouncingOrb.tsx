@@ -14,6 +14,7 @@ export function Bouncing({
   restY = -0.35,
   shadowRadius = 0.65,
   speed = 1.6,
+  spin = true,
 }: {
   phase: number;
   children: React.ReactNode;
@@ -21,6 +22,7 @@ export function Bouncing({
   restY?: number;
   shadowRadius?: number;
   speed?: number;
+  spin?: boolean;
 }) {
   const bodyRef = useRef<Group>(null);
   const shadowRef = useRef<Mesh>(null);
@@ -33,7 +35,7 @@ export function Bouncing({
 
     if (bodyRef.current) {
       bodyRef.current.position.y = restY + bounce * bounceHeight;
-      bodyRef.current.rotation.y += 0.008;
+      if (spin) bodyRef.current.rotation.y += 0.008;
     }
     if (shadowRef.current) {
       const squash = 1 - bounce * 0.55;

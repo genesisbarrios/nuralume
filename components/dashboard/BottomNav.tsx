@@ -13,9 +13,9 @@ import {
 
 const tabs = [
   { href: "/dashboard/home", label: "Home", icon: Home },
-  { href: "/dashboard/music", label: "Healing Music", icon: Music2 },
   { href: "/dashboard/affirmations", label: "Daily Affirmations", icon: Sparkles },
   { href: "/dashboard/reminders", label: "Reminders", icon: BellRing },
+  { href: "/dashboard/music", label: "Healing Music", icon: Music2 },
   { href: "/dashboard/astrology", label: "Astrology", icon: Moon },
   { href: "/dashboard/personality", label: "Personality Tests", icon: Fingerprint },
 ];
