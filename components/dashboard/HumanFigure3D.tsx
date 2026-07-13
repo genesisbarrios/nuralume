@@ -1,6 +1,6 @@
 "use client";
 
-import { Html, PerspectiveCamera, View } from "@react-three/drei";
+import { PerspectiveCamera, Text, View } from "@react-three/drei";
 import { Bouncing } from "./BouncingOrb";
 import type { Center } from "@/libs/humanDesign";
 
@@ -9,8 +9,8 @@ import type { Center } from "@/libs/humanDesign";
 // to read as "head down to root" the same order the bodygraph uses.
 const CENTER_POSITION: Record<Center, [number, number, number]> = {
   Head: [0, 1.6, 0.15],
-  Ajna: [0, 1.42, 0.28],
-  Throat: [0, 1.28, 0.22],
+  Ajna: [0, 1.44, 0.25],
+  Throat: [0, 1.28, 0.2],
   G: [0, 0.7, 0.24],
   Heart: [0.34, 0.62, 0.2],
   Spleen: [-0.38, 0.32, 0.16],
@@ -67,13 +67,14 @@ function FigureBody() {
         <sphereGeometry args={[0.22, 20, 20]} />
         <meshStandardMaterial color="#E8D5C4" roughness={0.6} />
       </mesh>
-      {/* Neck */}
-      <mesh position={[0, 1.4, 0]}>
-        <cylinderGeometry args={[0.11, 0.13, 0.22, 12]} />
+      {/* Neck — short, vertical (default cylinder axis is already Y, no
+          rotation applied), just barely bridging head and shoulders. */}
+      <mesh position={[0, 1.36, 0]}>
+        <cylinderGeometry args={[0.09, 0.11, 0.1, 12]} />
         <meshStandardMaterial color="#D9C7B8" roughness={0.6} />
       </mesh>
       {/* Shoulders */}
-      <mesh position={[0, 1.26, 0]} rotation={[0, 0, Math.PI / 2]}>
+      <mesh position={[0, 1.22, 0]} rotation={[0, 0, Math.PI / 2]}>
         <capsuleGeometry args={[0.13, 0.62, 4, 12]} />
         <meshStandardMaterial color="#D9C7B8" roughness={0.6} />
       </mesh>
@@ -131,16 +132,23 @@ function CenterDots({ defined }: { defined: Set<Center> }) {
                 opacity={isDefined ? 1 : 0.4}
               />
             </mesh>
-            <Html position={[x + side * 0.4, y, z]} center>
-              <span
-                className={`whitespace-nowrap rounded bg-base-100/80 px-1 text-[9px] font-semibold ${
-                  isDefined ? "text-primary" : "text-base-content/40"
-                }`}
-                style={{ pointerEvents: "none" }}
-              >
-                {CENTER_LABEL[center]}
-              </span>
-            </Html>
+            {/* Real 3D text instead of drei's <Html> — Html projects DOM
+                overlays using the full shared canvas' bounding rect, not
+                this icon's tracked <View> sub-region, so labels landed in
+                the wrong place (top-right of the whole page). Text renders
+                as actual scene geometry, so View's viewport/scissor handles
+                it correctly like any other mesh. */}
+            <Text
+              position={[x + side * 0.42, y, z]}
+              fontSize={0.11}
+              color={isDefined ? color : "#9CA3AF"}
+              anchorX={side === 1 ? "left" : "right"}
+              anchorY="middle"
+              outlineWidth={0.008}
+              outlineColor="#1a1a1a"
+            >
+              {CENTER_LABEL[center]}
+            </Text>
           </group>
         );
       })}
