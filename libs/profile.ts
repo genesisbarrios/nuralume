@@ -24,13 +24,21 @@ export async function getProfileBirthData(): Promise<ProfileBirthData | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .select(
       "email, display_name, birth_date, birth_time, birth_city, birth_country_code, horoscope_frequency"
     )
     .eq("id", user.id)
     .maybeSingle();
+
+  // A query error (e.g. schema drift — a column the code expects hasn't
+  // been migrated on the live DB yet) would otherwise silently fall through
+  // to empty defaults below, making a real bug look like "no birth data
+  // saved" instead of surfacing in logs.
+  if (error) {
+    console.error("[getProfileBirthData] query failed:", error);
+  }
 
   return {
     email: data?.email ?? user.email ?? null,
