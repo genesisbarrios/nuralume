@@ -457,10 +457,16 @@ function BirthChartPanel({
               key={key}
               type="button"
               onClick={() => hasDetail && toggle(key)}
-              className={`rounded-xl bg-base-200 p-4 text-center transition-colors ${
+              className={`flex flex-col items-center rounded-xl bg-base-200 p-4 text-center transition-colors ${
                 hasDetail ? "cursor-pointer hover:bg-base-300" : "cursor-default"
               }`}
             >
+              {sign && (
+                <ZodiacAnimalIcon
+                  sign={sign as ZodiacSign}
+                  className="pointer-events-none"
+                />
+              )}
               <p className="font-handwritten text-xl text-primary">
                 {sign ?? "—"}
               </p>
