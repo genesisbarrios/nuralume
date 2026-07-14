@@ -102,8 +102,8 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
         onEnded={() => playIndex(currentIndex + 1)}
       />
 
-      <div className="rounded-xl bg-base-200 p-4">
-        <div className="flex items-center gap-3">
+      <div className="min-w-0 rounded-xl bg-base-200 p-4">
+        <div className="flex min-w-0 items-center gap-3">
           <TrackArt track={current} className="h-14 w-14" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{current.title}</p>
@@ -175,13 +175,13 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
         </div>
       </div>
 
-      <ul className="mt-4 space-y-1">
+      <ul className="mt-4 min-w-0 space-y-1">
         {tracks.map((track, index) => (
-          <li key={track.id}>
+          <li key={track.id} className="min-w-0">
             <button
               type="button"
               onClick={() => playIndex(index)}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+              className={`flex w-full min-w-0 items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                 index === currentIndex
                   ? "bg-primary/10 text-primary"
                   : "hover:bg-base-200"
