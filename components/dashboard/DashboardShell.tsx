@@ -37,7 +37,7 @@ export default function DashboardShell({
 
       <div className="mx-auto mb-24 mt-6 flex max-w-lg justify-center lg:max-w-4xl lg:items-stretch">
         <DesktopNav />
-        <div className="min-h-[calc(100vh-5rem)] flex-1 rounded-[2rem] bg-base-100 bg-ruled-paper pb-20 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
+        <div className="min-h-[calc(100vh-5rem)] min-w-0 flex-1 rounded-[2rem] bg-base-100 bg-ruled-paper pb-20 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
           <div className="mx-auto max-w-lg px-5 pt-8 lg:max-w-2xl">
             {children}
           </div>
