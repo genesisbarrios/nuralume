@@ -286,6 +286,44 @@ const HOUSE_MEANING: Record<number, string> = {
   12: "The subconscious, spirituality, and letting go.",
 };
 
+// Short noun-phrase themes, written to compose naturally into the "planet
+// in house" sentence below (same style as HOUSE_MEANING's phrasing).
+const PLANET_THEME: Record<string, string> = {
+  Sun: "your core identity and vitality",
+  Moon: "your emotions and instincts",
+  Mercury: "communication and thinking",
+  Venus: "love, beauty, and values",
+  Mars: "drive, action, and assertiveness",
+  Jupiter: "growth, luck, and expansion",
+  Saturn: "discipline, structure, and responsibility",
+  Uranus: "change, rebellion, and sudden insight",
+  Neptune: "dreams, intuition, and imagination",
+  Pluto: "transformation and hidden power",
+  Chiron: "old wounds and deep healing",
+};
+
+// Lowercases the first letter and strips a trailing period so a
+// HOUSE_MEANING sentence can be embedded mid-sentence.
+function toPhrase(sentence: string): string {
+  const trimmed = sentence.replace(/\.$/, "");
+  return trimmed.charAt(0).toLowerCase() + trimmed.slice(1);
+}
+
+// A few rotating templates (picked deterministically by house number) so
+// 11 planets × 12 houses doesn't read as the exact same sentence shape
+// repeated over and over.
+const PLANET_IN_HOUSE_TEMPLATES: ((planet: string, house: string) => string)[] = [
+  (planet, house) => `${planet} here channels ${PLANET_THEME[planet]} into ${house}.`,
+  (planet, house) => `This placement brings ${PLANET_THEME[planet]} to bear on ${house}.`,
+  (planet, house) => `Expect ${PLANET_THEME[planet]} to color how you experience ${house}.`,
+];
+
+function planetInHouseText(planet: string, house: number): string | null {
+  if (!PLANET_THEME[planet] || !HOUSE_MEANING[house]) return null;
+  const template = PLANET_IN_HOUSE_TEMPLATES[house % PLANET_IN_HOUSE_TEMPLATES.length];
+  return template(planet, toPhrase(HOUSE_MEANING[house]));
+}
+
 const CENTER_MEANING: Record<Center, { topic: string; defined: string; undefined: string }> = {
   Head: {
     topic: "Mental pressure and inspiration",
@@ -444,6 +482,10 @@ function BirthChartPanel({
                       {SIGN_MEANING[sign]}
                     </p>
                   )}
+                  {house != null &&
+                    planetInHouseText(label, house) && (
+                      <p className="mt-1">{planetInHouseText(label, house)}</p>
+                    )}
                 </div>
               )}
             </button>
@@ -489,6 +531,11 @@ function BirthChartPanel({
                         <p className="mt-1">
                           <span className="font-semibold">In {p.sign}:</span>{" "}
                           {SIGN_MEANING[p.sign]}
+                        </p>
+                      )}
+                      {planetInHouseText(p.name, p.house) && (
+                        <p className="mt-1">
+                          {planetInHouseText(p.name, p.house)}
                         </p>
                       )}
                     </div>

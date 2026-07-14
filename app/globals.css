@@ -10,6 +10,12 @@ html {
   .btn {
     @apply !capitalize;
   }
+  /* Amatic SC only ships weights 400/700, and 400 reads too thin at the
+     sizes this app uses it at — default every handwritten-font element to
+     bold instead of touching every individual usage site. */
+  .font-handwritten {
+    font-weight: 700;
+  }
   .text-balance {
     text-wrap: balance;
   }

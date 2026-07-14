@@ -78,7 +78,7 @@ export default function AffirmationView({
             {favorites.map((f) => (
               <li
                 key={f.affirmation_id}
-                className="rounded-lg bg-base-200 px-3 py-2 text-sm"
+                className="rounded-lg bg-base-200 px-3 py-2 font-handwritten text-lg leading-snug"
               >
                 {f.affirmation_text}
               </li>

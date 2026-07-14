@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Kalam } from "next/font/google";
+import { Amatic_SC, Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import config from "@/config";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-body" });
-const kalam = Kalam({
+const amaticSC = Amatic_SC({
   subsets: ["latin"],
   weight: ["400", "700"],
   variable: "--font-handwritten",
@@ -42,7 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-theme={config.colors.theme}>
-      <body className={`${inter.variable} ${kalam.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${amaticSC.variable} font-sans antialiased`}>
         {children}
         <Toaster position="bottom-center" />
       </body>

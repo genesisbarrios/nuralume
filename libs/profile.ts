@@ -8,6 +8,7 @@ import { createClient } from "@/libs/supabase/server";
 export type HomeHoroscopeFrequency = "daily" | "weekly";
 
 export interface ProfileBirthData {
+  email: string | null;
   displayName: string | null;
   birthDate: string | null;
   birthTime: string | null;
@@ -26,12 +27,13 @@ export async function getProfileBirthData(): Promise<ProfileBirthData | null> {
   const { data } = await supabase
     .from("profiles")
     .select(
-      "display_name, birth_date, birth_time, birth_city, birth_country_code, horoscope_frequency"
+      "email, display_name, birth_date, birth_time, birth_city, birth_country_code, horoscope_frequency"
     )
     .eq("id", user.id)
     .maybeSingle();
 
   return {
+    email: data?.email ?? user.email ?? null,
     displayName: data?.display_name ?? null,
     birthDate: data?.birth_date ?? null,
     birthTime: data?.birth_time ?? null,

@@ -25,6 +25,7 @@ export interface Database {
       profiles: {
         Row: {
           id: string;
+          email: string | null;
           display_name: string | null;
           birth_date: string | null;
           birth_time: string | null;
