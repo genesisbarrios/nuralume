@@ -5,8 +5,10 @@ import {
   type Chart,
 } from "celestine";
 import { computeNatalChart, type BirthDataInput } from "@/libs/astrology";
+import { TYPE_STRATEGY } from "@/libs/humanDesignTypes";
 
 export type { BirthDataInput };
+export { HUMAN_DESIGN_TYPES, type HumanDesignTypeInfo } from "@/libs/humanDesignTypes";
 
 // ============================================================================
 // Standard Human Design bodygraph structure (public-domain system data,
@@ -245,47 +247,6 @@ function determineDefinition(components: Center[][]): string {
       return "Quadruple Split Definition";
   }
 }
-
-const TYPE_STRATEGY: Record<string, string> = {
-  Generator: "Respond to what shows up, rather than initiating.",
-  "Manifesting Generator": "Respond, then inform others before acting.",
-  Manifestor: "Inform others before you act.",
-  Projector: "Wait for invitation and recognition.",
-  Reflector: "Wait a full lunar cycle before big decisions.",
-};
-
-export const HUMAN_DESIGN_TYPES = [
-  {
-    type: "Generator",
-    strategy: TYPE_STRATEGY.Generator,
-    description:
-      "About 70% of people. Generators have sustainable energy for work they love and are here to master their craft through response.",
-  },
-  {
-    type: "Manifesting Generator",
-    strategy: TYPE_STRATEGY["Manifesting Generator"],
-    description:
-      "A fast-moving Generator variant — multi-passionate, efficient, and prone to skipping steps that others find necessary.",
-  },
-  {
-    type: "Manifestor",
-    strategy: TYPE_STRATEGY.Manifestor,
-    description:
-      "About 9% of people. Manifestors initiate and are here to make things happen, independently of others' response.",
-  },
-  {
-    type: "Projector",
-    strategy: TYPE_STRATEGY.Projector,
-    description:
-      "About 20% of people. Projectors see others deeply and guide effectively, but thrive most when invited rather than pushing.",
-  },
-  {
-    type: "Reflector",
-    strategy: TYPE_STRATEGY.Reflector,
-    description:
-      "Under 1% of people. Reflectors are highly sensitive mirrors of their environment, and benefit from patience above all.",
-  },
-];
 
 export interface HumanDesignResult {
   type: string | null;

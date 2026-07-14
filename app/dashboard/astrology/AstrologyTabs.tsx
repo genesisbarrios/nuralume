@@ -10,6 +10,7 @@ import type { NumerologyProfile } from "@/libs/numerology";
 import type { AstrologyPlanet, AstrologyResult } from "@/libs/astrology";
 import type { HoroscopeFrequency } from "@/libs/horoscope";
 import type { Center, HumanDesignResult } from "@/libs/humanDesign";
+import { HUMAN_DESIGN_TYPES } from "@/libs/humanDesignTypes";
 import type { ProfileBirthData } from "@/libs/profile";
 import type { ZodiacSign } from "@/libs/zodiac";
 import type { PlanetName } from "@/components/dashboard/PlanetIcons3D";
@@ -673,6 +674,8 @@ function HumanDesignPanel({
     ? (result.definedCenters?.includes(hoveredCenter) ?? false)
     : false;
 
+  const typeInfo = HUMAN_DESIGN_TYPES.find((t) => t.type === result.type);
+
   return (
     <div>
       {result.source === "fallback" && (
@@ -705,6 +708,25 @@ function HumanDesignPanel({
             <span className="font-semibold">Strategy: </span>
             {result.strategy}
           </p>
+
+          {typeInfo && (
+            <div className="mt-3 space-y-3 rounded-xl bg-base-200 p-4 text-sm leading-relaxed">
+              <p>
+                <span className="font-semibold">Life theme: </span>
+                {typeInfo.lifeTheme}
+              </p>
+              <p>
+                <span className="font-semibold">Energy mechanics: </span>
+                {typeInfo.energyMechanics}
+              </p>
+              <p>
+                <span className="font-semibold">
+                  Signature ({typeInfo.signature}) vs. not-self:
+                </span>{" "}
+                {typeInfo.notSelf}
+              </p>
+            </div>
+          )}
 
           <p className="mt-3 text-center text-xs text-base-content/50">
             {result.definition} &middot;{" "}
