@@ -1,9 +1,38 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrthographicCamera } from "@react-three/drei";
+import { OrthographicCamera, useAnimations, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
+import { playWooshSound } from "./sounds";
+
+const SERAPHIM_MODEL_URL = "/models/seraphim/model.gltf";
+const SERAPHIM_SCALE = 0.45;
+
+useGLTF.preload(SERAPHIM_MODEL_URL);
+
+// The GLTF's own animated hierarchy (idle/fly/spawn/pose clips baked in by
+// Blockbench) — this only drives the model's internal bones. The outer
+// group in SeraphimScene owns world position/rotation for gameplay movement,
+// so the two never fight over the same transforms.
+function SeraphimAvatarModel({
+  avatarRef,
+}: {
+  avatarRef: React.MutableRefObject<THREE.Group | null>;
+}) {
+  const { scene, animations } = useGLTF(SERAPHIM_MODEL_URL);
+  const { actions } = useAnimations(animations, avatarRef);
+
+  useEffect(() => {
+    const flyAction = actions.fly ?? actions.idle;
+    flyAction?.reset().fadeIn(0.3).play();
+    return () => {
+      flyAction?.fadeOut(0.3);
+    };
+  }, [actions]);
+
+  return <primitive object={scene} />;
+}
 
 // ============================================================================
 // Crystal types
@@ -150,7 +179,7 @@ function SeraphimScene({
   const playerPos = useRef(new THREE.Vector3(0, 0, 0));
   const keysDown = useRef(new Set<string>());
   const spawnTimer = useRef(0);
-  const cameraRef = useRef<THREE.OrthographicCamera>(null);
+  const cameraRef = useRef<THREE.OrthographicCamera | null>(null);
   const collectingRef = useRef(new Set<number>());
   const { size } = useThree();
 
@@ -161,10 +190,23 @@ function SeraphimScene({
   const dragOrigin = useRef({ x: 0, y: 0 });
   const dragCurrent = useRef({ x: 0, y: 0 });
 
-  const avatarRef = useRef<THREE.Group>(null);
-  const wingLRef = useRef<THREE.Group>(null);
-  const wingRRef = useRef<THREE.Group>(null);
-  const haloRef = useRef<THREE.Mesh>(null);
+  const avatarRef = useRef<THREE.Group | null>(null);
+
+  // Stable (useCallback) ref setters that seed an initial position exactly
+  // once on mount. A plain `position={...}` JSX prop gets re-applied by R3F
+  // on every re-render of this component (every crystal spawn/collect,
+  // since that's a new array literal each time) — which would snap both the
+  // camera and the seraphim back to the origin each time, fighting with the
+  // per-frame movement below. Setting it imperceptibly once via ref avoids
+  // that fight entirely.
+  const setCameraRef = useCallback((cam: THREE.OrthographicCamera | null) => {
+    cameraRef.current = cam;
+    if (cam) cam.position.set(0, 20, 0);
+  }, []);
+  const setAvatarRef = useCallback((group: THREE.Group | null) => {
+    avatarRef.current = group;
+    if (group) group.position.set(0, 1, 0);
+  }, []);
 
   const aspect = size.width / Math.max(size.height, 1);
   const frustum = useMemo(
@@ -281,9 +323,14 @@ function SeraphimScene({
       BOUNDS_Z
     );
 
+    // Soft-follow camera — lerping (instead of snapping every frame) means
+    // the seraphim visibly drifts within the frame as you steer, with the
+    // camera gently catching up, rather than staying pixel-locked to it.
     if (cameraRef.current) {
-      cameraRef.current.position.set(player.x, 20, player.z);
-      cameraRef.current.lookAt(player.x, 0, player.z);
+      const cam = cameraRef.current;
+      cam.position.x = THREE.MathUtils.lerp(cam.position.x, player.x, 0.09);
+      cam.position.z = THREE.MathUtils.lerp(cam.position.z, player.z, 0.09);
+      cam.lookAt(cam.position.x, 0, cam.position.z);
     }
 
     const t = state.clock.getElapsedTime();
@@ -300,10 +347,6 @@ function SeraphimScene({
         avatarRef.current.rotation.y += angleDelta * 0.15;
       }
     }
-    const flapScale = 0.85 + Math.sin(t * 6) * 0.12;
-    wingLRef.current?.scale.set(flapScale, 1, 1);
-    wingRRef.current?.scale.set(-flapScale, 1, 1);
-    if (haloRef.current) haloRef.current.rotation.z += delta * 0.6;
 
     spawnTimer.current += delta;
     if (spawnTimer.current > SPAWN_INTERVAL) {
@@ -326,9 +369,8 @@ function SeraphimScene({
   return (
     <>
       <OrthographicCamera
-        ref={cameraRef}
+        ref={setCameraRef}
         makeDefault
-        position={[0, 20, 0]}
         near={0.1}
         far={100}
         left={frustum.left}
@@ -352,58 +394,11 @@ function SeraphimScene({
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
-      <group ref={avatarRef} position={[0, 1, 0]}>
-        <pointLight color="#FFDFA0" intensity={1.2} distance={5} />
-        <mesh ref={haloRef} rotation={[Math.PI / 2, 0, 0]} position={[0, 0.9, 0]}>
-          <torusGeometry args={[0.5, 0.05, 12, 32]} />
-          <meshStandardMaterial
-            color="#FFD700"
-            emissive="#FFD700"
-            emissiveIntensity={1}
-            metalness={0.5}
-            roughness={0.25}
-          />
-        </mesh>
-        <mesh>
-          <icosahedronGeometry args={[0.45, 2]} />
-          <meshStandardMaterial
-            color="#FFF6E0"
-            emissive="#FFD98A"
-            emissiveIntensity={0.8}
-            metalness={0.1}
-            roughness={0.3}
-          />
-        </mesh>
-        <group ref={wingLRef} position={[0.1, 0.05, 0]}>
-          <mesh position={[0.15, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <circleGeometry args={[0.85, 24, -0.55, 1.1]} />
-            <meshStandardMaterial
-              color="#FFFDF5"
-              emissive="#FFE9B0"
-              emissiveIntensity={0.5}
-              transparent
-              opacity={0.85}
-              side={THREE.DoubleSide}
-              metalness={0}
-              roughness={0.6}
-            />
-          </mesh>
-        </group>
-        <group ref={wingRRef} position={[-0.1, 0.05, 0]}>
-          <mesh position={[0.15, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <circleGeometry args={[0.85, 24, -0.55, 1.1]} />
-            <meshStandardMaterial
-              color="#FFFDF5"
-              emissive="#FFE9B0"
-              emissiveIntensity={0.5}
-              transparent
-              opacity={0.85}
-              side={THREE.DoubleSide}
-              metalness={0}
-              roughness={0.6}
-            />
-          </mesh>
-        </group>
+      <group ref={setAvatarRef} scale={SERAPHIM_SCALE}>
+        <pointLight color="#FFDFA0" intensity={1.2} distance={8} />
+        <Suspense fallback={null}>
+          <SeraphimAvatarModel avatarRef={avatarRef} />
+        </Suspense>
       </group>
 
       {crystals.map((c) => (
@@ -630,6 +625,7 @@ export default function SeraphimCrystalGame({
   const [resetSignal, setResetSignal] = useState(0);
 
   const handleCollect = (type: CrystalType) => {
+    playWooshSound();
     setScore((s) => s + 1);
     setCounts((c) => ({ ...c, [type]: c[type] + 1 }));
   };

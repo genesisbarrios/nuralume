@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
+import { playPopSound } from "./sounds";
 
 // ============================================================================
 // Procedural fluid/marble texture — direct port of the original canvas-based
@@ -450,6 +451,7 @@ export default function PopItGame({ className = "" }: { className?: string }) {
     poppedIndices.size === bubblePositions.length;
 
   const togglePop = (index: number) => {
+    if (!poppedIndices.has(index)) playPopSound();
     setPoppedIndices((prev) => {
       const next = new Set(prev);
       if (next.has(index)) next.delete(index);
