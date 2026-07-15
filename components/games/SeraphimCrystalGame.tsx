@@ -12,7 +12,7 @@ import { useGameFullscreen } from "./useGameFullscreen";
 const SERAPHIM_MODEL_URL = "/models/seraphim/model.gltf";
 const SERAPHIM_SCALE = 0.45;
 const DEMON_MODEL_URL = "/models/demon/model.glb";
-const DEMON_SCALE = 0.4;
+const DEMON_SCALE = 0.6;
 
 useGLTF.preload(SERAPHIM_MODEL_URL);
 useGLTF.preload(DEMON_MODEL_URL);
@@ -105,7 +105,7 @@ const FRUSTUM_SIZE = 25;
 const CAMERA_HEIGHT = 18;
 const CAMERA_BACK_OFFSET = 12;
 const DEMON_SPEED = 9; // units/sec — half the player's speed, so it's avoidable
-const DEMON_COLLISION_RADIUS = 2.5;
+const DEMON_COLLISION_RADIUS = 3;
 const DEMON_RETARGET_DIST = 2;
 
 let nextCrystalId = 0;
