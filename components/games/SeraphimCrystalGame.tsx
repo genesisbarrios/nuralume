@@ -4,7 +4,8 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrthographicCamera, useAnimations, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import { playWooshSound } from "./sounds";
+import { playWooshSound, unlockAudio } from "./sounds";
+import FullscreenButton from "./FullscreenButton";
 
 const SERAPHIM_MODEL_URL = "/models/seraphim/model.gltf";
 const SERAPHIM_SCALE = 0.45;
@@ -71,8 +72,8 @@ interface CrystalData {
 const MAX_CRYSTALS = 25;
 const SPAWN_INTERVAL = 1.5;
 const COLLECTION_RADIUS = 2;
-const BOUNDS_X = 22;
-const BOUNDS_Z = 15;
+const BOUNDS_X = 23;
+const BOUNDS_Z = 18;
 const PLAYER_SPEED = 18; // units/sec
 const FRUSTUM_SIZE = 25;
 
@@ -636,8 +637,14 @@ export default function SeraphimCrystalGame({
     setResetSignal((n) => n + 1);
   };
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className={`relative h-full w-full ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative h-full w-full ${className}`}
+      onPointerDown={unlockAudio}
+    >
       <SkyBackground />
       <Canvas
         gl={{ antialias: true, alpha: true }}
@@ -648,6 +655,7 @@ export default function SeraphimCrystalGame({
       </Canvas>
       <TrackingEye />
       <HUD score={score} counts={counts} onReset={handleReset} />
+      <FullscreenButton containerRef={containerRef} />
     </div>
   );
 }

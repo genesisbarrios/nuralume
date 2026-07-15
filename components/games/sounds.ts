@@ -19,6 +19,17 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
+// Mobile browsers (iOS Safari in particular) only allow an AudioContext to
+// be created/resumed synchronously inside a direct user-gesture event —
+// and React Three Fiber dispatches its own pointer/click events through a
+// pipeline that isn't reliably treated as "direct" by that check. Calling
+// this from a plain native DOM listener (e.g. onPointerDown on the game's
+// root element, outside the Canvas) unlocks the context up front so later
+// sound calls triggered from R3F events still work.
+export function unlockAudio() {
+  getAudioContext();
+}
+
 export function playPopSound() {
   const ctx = getAudioContext();
   if (!ctx) return;

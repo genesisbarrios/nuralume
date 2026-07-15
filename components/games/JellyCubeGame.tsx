@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import FullscreenButton from "./FullscreenButton";
 
 type PhaseName = "INHALE" | "HOLD" | "EXHALE" | "REST";
 
@@ -61,6 +62,7 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
   const [cycleCount, setCycleCount] = useState(0);
   const [statusText, setStatusText] = useState("Ready");
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const cubeRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<HTMLDivElement>(null);
@@ -207,18 +209,16 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
 
   return (
     <div
+      ref={containerRef}
       className={`relative flex h-full w-full flex-col items-center justify-center gap-4 overflow-y-auto bg-gradient-to-br from-[#a4c5c7] to-[#2D3F48] p-6 text-white ${className}`}
     >
-      <div
-        className="absolute left-4 flex flex-wrap justify-start gap-2"
-        style={{ top: 20 }}
-      >
+      <div className="absolute left-2 right-14 top-2 flex flex-wrap justify-start gap-1.5 sm:left-4 sm:right-16 sm:top-5 sm:gap-2">
         {(Object.keys(PATTERNS) as PatternKey[]).map((key) => (
           <button
             key={key}
             type="button"
             onClick={() => handlePatternChange(key)}
-            className={`rounded-full border-2 border-[#4dd0e1] px-4 py-2 text-sm font-bold transition-all hover:scale-105 ${
+            className={`rounded-full border-2 border-[#4dd0e1] px-2 py-1 text-[10px] font-bold transition-all hover:scale-105 sm:px-4 sm:py-2 sm:text-sm ${
               patternKey === key
                 ? "bg-[#4dd0e1] text-[#1a1a2e]"
                 : "bg-black/30 text-[#4dd0e1]"
@@ -232,7 +232,7 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
       <button
         type="button"
         onClick={handleToggle}
-        className={`absolute bottom-4 right-4 min-w-[120px] rounded-full px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:scale-105 ${
+        className={`absolute bottom-2 right-2 min-w-[80px] rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-lg transition hover:scale-105 sm:bottom-4 sm:right-4 sm:min-w-[120px] sm:px-4 sm:py-2 sm:text-sm ${
           isRunning ? "bg-[#4CAF50]" : "bg-[#e94560]"
         }`}
       >
@@ -240,7 +240,7 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
       </button>
 
       <div
-        className="mx-auto my-2"
+        className="mx-auto my-2 scale-[0.6] sm:scale-100"
         style={{ width: 200, height: 200, perspective: 800 }}
       >
         <div
@@ -274,20 +274,21 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-4 flex flex-col items-start">
-        <div className="min-h-[2.4rem] text-left text-xl font-bold tracking-wide drop-shadow">
+      <div className="absolute bottom-2 left-2 flex flex-col items-start sm:bottom-4 sm:left-4">
+        <div className="min-h-[1.6rem] text-left text-xs font-bold tracking-wide drop-shadow sm:min-h-[2.4rem] sm:text-xl">
           {statusText}
         </div>
         <div
           ref={timerRef}
-          className="text-left text-5xl font-extrabold tabular-nums text-[#4dd0e1] drop-shadow"
+          className="text-left text-2xl font-extrabold tabular-nums text-[#4dd0e1] drop-shadow sm:text-5xl"
         >
           0
         </div>
       </div>
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/15 px-5 py-2 text-center text-sm text-white/85 backdrop-blur">
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/15 px-3 py-1 text-center text-[10px] text-white/85 backdrop-blur sm:bottom-4 sm:px-5 sm:py-2 sm:text-sm">
         Cycles Completed: {cycleCount}
       </div>
+      <FullscreenButton containerRef={containerRef} />
     </div>
   );
 }

@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import { playPopSound } from "./sounds";
+import { playPopSound, unlockAudio } from "./sounds";
+import FullscreenButton from "./FullscreenButton";
 
 // ============================================================================
 // Procedural fluid/marble texture — direct port of the original canvas-based
@@ -331,6 +332,32 @@ function ToneMapping() {
   return null;
 }
 
+// The ball's on-screen size is set by the camera's distance combined with
+// its aspect ratio — a PerspectiveCamera's horizontal FOV shrinks as the
+// container gets narrower (e.g. a phone-width card), so the same z=9 that
+// frames the sphere nicely on a square/landscape container crops in tight
+// on a narrow mobile one. Push the camera back as the container narrows so
+// the sphere+bubbles keep roughly the same on-screen size everywhere.
+const BASE_CAMERA_Z = 9;
+const BASE_ASPECT = 1;
+const MAX_CAMERA_Z = 20;
+
+function ResponsiveCamera() {
+  const { camera, size } = useThree();
+  useEffect(() => {
+    const aspect = size.width / Math.max(size.height, 1);
+    const z =
+      aspect < BASE_ASPECT
+        ? Math.min((BASE_CAMERA_Z * BASE_ASPECT) / aspect, MAX_CAMERA_Z)
+        : BASE_CAMERA_Z;
+    camera.position.z = z;
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.updateProjectionMatrix();
+    }
+  }, [camera, size]);
+  return null;
+}
+
 function PopItScene({
   bubblePositions,
   poppedIndices,
@@ -379,6 +406,7 @@ function PopItScene({
   return (
     <>
       <ToneMapping />
+      <ResponsiveCamera />
       <ambientLight intensity={0.6} />
       <directionalLight position={[3, 5, 8]} intensity={1.8} />
       <directionalLight position={[-3, -2, -5]} intensity={0.8} />
@@ -443,6 +471,7 @@ function SkyBackground() {
 }
 
 export default function PopItGame({ className = "" }: { className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const bubblePositions = useBubblePositions(2.7);
   const [poppedIndices, setPoppedIndices] = useState<Set<number>>(new Set());
 
@@ -461,7 +490,11 @@ export default function PopItGame({ className = "" }: { className?: string }) {
   };
 
   return (
-    <div className={`relative h-full w-full ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative h-full w-full ${className}`}
+      onPointerDown={unlockAudio}
+    >
       <SkyBackground />
       {/* alpha:true + no scene background so the sky/clouds behind show
           through wherever the 3D scene doesn't cover. */}
@@ -476,6 +509,7 @@ export default function PopItGame({ className = "" }: { className?: string }) {
           onTogglePop={togglePop}
         />
       </Canvas>
+      <FullscreenButton containerRef={containerRef} />
       {allPopped && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <button
