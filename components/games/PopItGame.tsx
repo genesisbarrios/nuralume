@@ -8,107 +8,6 @@ import FullscreenButton from "./FullscreenButton";
 import { useGameFullscreen } from "./useGameFullscreen";
 
 // ============================================================================
-// Procedural fluid/marble texture — direct port of the original canvas-based
-// value-noise (fBm) generator. Deterministic per call, no image assets.
-// ============================================================================
-function hash(x: number, y: number): number {
-  let h = x * 374761393 + y * 668265263;
-  h = (h ^ (h >> 13)) * 1274126177;
-  return (h ^ (h >> 16)) & 0x7fffffff;
-}
-
-function smoothNoise(x: number, y: number): number {
-  const ix = Math.floor(x);
-  const iy = Math.floor(y);
-  const fx = x - ix;
-  const fy = y - iy;
-  const ux = fx * fx * (3 - 2 * fx);
-  const uy = fy * fy * (3 - 2 * fy);
-  const a = (hash(ix, iy) & 0xffff) / 65536;
-  const b = (hash(ix + 1, iy) & 0xffff) / 65536;
-  const c = (hash(ix, iy + 1) & 0xffff) / 65536;
-  const d = (hash(ix + 1, iy + 1) & 0xffff) / 65536;
-  return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy;
-}
-
-function fbm(x: number, y: number, octaves: number): number {
-  let val = 0;
-  let amp = 0.5;
-  let freq = 1;
-  for (let i = 0; i < octaves; i++) {
-    val += amp * smoothNoise(x * freq, y * freq);
-    amp *= 0.5;
-    freq *= 2.0;
-  }
-  return val;
-}
-
-function generateFluidTexture(width: number, height: number): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d")!;
-  const imageData = ctx.createImageData(width, height);
-  const data = imageData.data;
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const i = (y * width + x) * 4;
-
-      const nx = (x / width) * 2.8;
-      const ny = (y / height) * 2.8;
-
-      const n1 = fbm(nx, ny, 5);
-      const n2 = fbm(nx + 3.2, ny + 1.8, 4);
-      const n3 = fbm(nx + 6.4, ny + 4.2, 4);
-      const n4 = fbm(nx * 1.5 + 9.0, ny * 1.5 + 7.5, 4);
-
-      let r = 238;
-      let g = 195;
-      let b = 145;
-
-      if (n1 > 0.4) {
-        r = 80;
-        g = 255;
-        b = 200;
-      }
-      if (n2 > 0.55) {
-        r = 150;
-        g = 85;
-        b = 235;
-      }
-      if (n3 > 0.6 && n2 < 0.45) {
-        r = 255;
-        g = 225;
-        b = 90;
-      }
-      if (n4 > 0.5 && n1 < 0.55) {
-        r = 255;
-        g = 140;
-        b = 190;
-      }
-
-      const edgeNoise = n1 * 0.8 + n2 * 0.2;
-      const edgeLine = Math.sin(edgeNoise * 25) * 0.5 + 0.5;
-      if (edgeLine > 0.85) {
-        r -= 50;
-        g -= 50;
-        b -= 50;
-      }
-
-      data[i] = Math.max(60, Math.min(255, r));
-      data[i + 1] = Math.max(60, Math.min(255, g));
-      data[i + 2] = Math.max(60, Math.min(255, b));
-      data[i + 3] = 255;
-    }
-  }
-  ctx.putImageData(imageData, 0, 0);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
-// ============================================================================
 // Bubble layout — vertices of a once-subdivided icosahedron give an even,
 // pentagonal/hexagonal grid across the sphere's surface.
 // ============================================================================
@@ -142,12 +41,16 @@ const POPPED_SCALE: [number, number, number] = [0.6, 0.6, 0.4];
 // it to count as a drag-to-rotate gesture instead of a pop.
 const DRAG_THRESHOLD = 6;
 
-// Evenly spread, vivid tie-dye hues — the golden angle keeps neighboring
+// Evenly spread, vivid solid hues — the golden angle keeps neighboring
 // bubbles from landing on similar colors, so the spread reads as varied
-// rather than a smooth rainbow gradient.
+// rather than a smooth rainbow gradient. Lightness gets its own small,
+// independently-seeded wobble so same-hued bubbles aren't identical twins.
 function bubbleColor(index: number): string {
   const hue = (index * 137.508) % 360;
-  return `hsl(${hue}, 85%, 60%)`;
+  const lightSeed = Math.sin(index * 45.164) * 25634.876;
+  const lightFraction = lightSeed - Math.floor(lightSeed);
+  const lightness = 52 + lightFraction * 14; // 52% – 66%
+  return `hsl(${hue}, 88%, ${lightness}%)`;
 }
 
 // Deterministic pseudo-random per-bubble size so real bubble-wrap-style
@@ -275,14 +178,12 @@ function PopParticles({
 function Bubble({
   index,
   position,
-  texture,
   popped,
   onToggle,
   dragMoved,
 }: {
   index: number;
   position: THREE.Vector3;
-  texture: THREE.CanvasTexture;
   popped: boolean;
   onToggle: () => void;
   dragMoved: React.MutableRefObject<boolean>;
@@ -331,15 +232,23 @@ function Bubble({
       >
         <sphereGeometry args={[radius, 20, 20]} />
         <meshStandardMaterial
-          map={texture}
           color={color}
           transparent
           opacity={popped ? 0.78 : 0.88}
-          roughness={popped ? 1 : 0.25}
+          roughness={popped ? 1 : 0.15}
           metalness={0}
           emissive={popped ? "#222233" : color}
           emissiveIntensity={popped ? 0.15 : 0.12}
         />
+        {/* A small bright dot standing in for a specular highlight — cheap
+            way to read as glossy plastic without needing an environment
+            map for real reflections. */}
+        {!popped && (
+          <mesh position={[radius * 0.35, radius * 0.45, radius * 0.75]}>
+            <sphereGeometry args={[radius * 0.16, 8, 8]} />
+            <meshBasicMaterial color="#ffffff" transparent opacity={0.55} />
+          </mesh>
+        )}
       </mesh>
       {burst > 0 && <PopParticles trigger={burst} origin={restPosition} />}
     </group>
@@ -395,8 +304,6 @@ function PopItScene({
   const dragging = useRef(false);
   const dragMoved = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
-
-  const texture = useMemo(() => generateFluidTexture(1024, 1024), []);
 
   useEffect(() => {
     const handleMove = (e: PointerEvent) => {
@@ -455,7 +362,6 @@ function PopItScene({
             key={i}
             index={i}
             position={pos}
-            texture={texture}
             popped={poppedIndices.has(i)}
             onToggle={() => onTogglePop(i)}
             dragMoved={dragMoved}
