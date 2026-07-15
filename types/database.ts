@@ -141,6 +141,25 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["tracks"]["Row"]>;
         Relationships: [];
       };
+      seraphim_scores: {
+        Row: {
+          id: string;
+          user_id: string;
+          leaderboard_name: string;
+          score: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["seraphim_scores"]["Row"]
+        > & {
+          user_id: string;
+          leaderboard_name: string;
+          score: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["seraphim_scores"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

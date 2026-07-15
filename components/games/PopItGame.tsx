@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber"
 import * as THREE from "three";
 import { playPopSound, unlockAudio } from "./sounds";
 import FullscreenButton from "./FullscreenButton";
+import { useGameFullscreen } from "./useGameFullscreen";
 
 // ============================================================================
 // Procedural fluid/marble texture — direct port of the original canvas-based
@@ -149,6 +150,15 @@ function bubbleColor(index: number): string {
   return `hsl(${hue}, 85%, 60%)`;
 }
 
+// Deterministic pseudo-random per-bubble size so real bubble-wrap-style
+// unevenness reads as varied but stays stable across re-renders/pops rather
+// than reshuffling on every toggle.
+function bubbleSizeScale(index: number): number {
+  const seed = Math.sin(index * 12.9898) * 43758.5453;
+  const fraction = seed - Math.floor(seed);
+  return 0.75 + fraction * 0.5; // 0.75x – 1.25x of BUBBLE_RADIUS
+}
+
 // ============================================================================
 // Little clear bubbles that scatter outward and fade whenever `trigger`
 // changes — a fixed pool of pre-allocated (but hidden) meshes mutated via
@@ -279,6 +289,10 @@ function Bubble({
     [position]
   );
   const color = useMemo(() => bubbleColor(index), [index]);
+  const radius = useMemo(
+    () => BUBBLE_RADIUS * bubbleSizeScale(index),
+    [index]
+  );
 
   // Bumps whenever this bubble transitions from unpopped to popped, telling
   // PopParticles to fire a fresh scatter burst.
@@ -305,7 +319,7 @@ function Bubble({
         scale={popped ? POPPED_SCALE : REST_SCALE}
         onClick={handleClick}
       >
-        <sphereGeometry args={[BUBBLE_RADIUS, 20, 20]} />
+        <sphereGeometry args={[radius, 20, 20]} />
         <meshStandardMaterial
           map={texture}
           color={color}
@@ -472,6 +486,7 @@ function SkyBackground() {
 
 export default function PopItGame({ className = "" }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isMaximized, toggleMaximize } = useGameFullscreen();
   const bubblePositions = useBubblePositions(2.7);
   const [poppedIndices, setPoppedIndices] = useState<Set<number>>(new Set());
 
@@ -492,13 +507,16 @@ export default function PopItGame({ className = "" }: { className?: string }) {
   return (
     <div
       ref={containerRef}
-      className={`relative h-full w-full ${className}`}
+      className={`relative h-full w-full ${
+        isMaximized ? "!fixed !inset-0 !z-[100] !rounded-none" : ""
+      } ${className}`}
       onPointerDown={unlockAudio}
     >
       <SkyBackground />
       {/* alpha:true + no scene background so the sky/clouds behind show
           through wherever the 3D scene doesn't cover. */}
       <Canvas
+        key={isMaximized ? "fullscreen" : "normal"}
         camera={{ position: [0, 1.5, 9], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
         dpr={[1, 2]}
@@ -509,7 +527,7 @@ export default function PopItGame({ className = "" }: { className?: string }) {
           onTogglePop={togglePop}
         />
       </Canvas>
-      <FullscreenButton containerRef={containerRef} />
+      <FullscreenButton isMaximized={isMaximized} onToggle={toggleMaximize} />
       {allPopped && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <button

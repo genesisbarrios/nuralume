@@ -4,13 +4,18 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrthographicCamera, useAnimations, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import { playWooshSound, unlockAudio } from "./sounds";
+import { playThunderSound, playWooshSound, unlockAudio } from "./sounds";
+import { submitSeraphimScore } from "@/app/dashboard/games/actions";
 import FullscreenButton from "./FullscreenButton";
+import { useGameFullscreen } from "./useGameFullscreen";
 
 const SERAPHIM_MODEL_URL = "/models/seraphim/model.gltf";
 const SERAPHIM_SCALE = 0.45;
+const DEMON_MODEL_URL = "/models/demon/model.glb";
+const DEMON_SCALE = 0.4;
 
 useGLTF.preload(SERAPHIM_MODEL_URL);
+useGLTF.preload(DEMON_MODEL_URL);
 
 // The GLTF's own animated hierarchy (idle/fly/spawn/pose clips baked in by
 // Blockbench) — this only drives the model's internal bones. The outer
@@ -26,6 +31,27 @@ function SeraphimAvatarModel({
 
   useEffect(() => {
     const flyAction = actions.fly ?? actions.idle;
+    flyAction?.reset().fadeIn(0.3).play();
+    return () => {
+      flyAction?.fadeOut(0.3);
+    };
+  }, [actions]);
+
+  return <primitive object={scene} />;
+}
+
+// Same pattern as SeraphimAvatarModel — the demon's own rig drives its
+// flying-loop animation; DemonAvatar (below) owns its world position.
+function DemonAvatarModel({
+  demonRef,
+}: {
+  demonRef: React.MutableRefObject<THREE.Group | null>;
+}) {
+  const { scene, animations } = useGLTF(DEMON_MODEL_URL);
+  const { actions } = useAnimations(animations, demonRef);
+
+  useEffect(() => {
+    const flyAction = actions.Fast_Flying ?? actions.Flying_Idle;
     flyAction?.reset().fadeIn(0.3).play();
     return () => {
       flyAction?.fadeOut(0.3);
@@ -76,6 +102,11 @@ const BOUNDS_X = 23;
 const BOUNDS_Z = 18;
 const PLAYER_SPEED = 18; // units/sec
 const FRUSTUM_SIZE = 25;
+const CAMERA_HEIGHT = 18;
+const CAMERA_BACK_OFFSET = 12;
+const DEMON_SPEED = 9; // units/sec — half the player's speed, so it's avoidable
+const DEMON_COLLISION_RADIUS = 2.5;
+const DEMON_RETARGET_DIST = 2;
 
 let nextCrystalId = 0;
 function randomCrystal(): CrystalData {
@@ -90,6 +121,17 @@ function randomCrystal(): CrystalData {
     floatOffset: Math.random() * Math.PI * 2,
     rotSpeed: 0.5 + Math.random() * 0.5,
   };
+}
+
+// Keeps the demon's wander target within the same area the player can
+// actually reach, so it's always a plausible threat rather than drifting
+// off into unreachable space.
+function randomDemonPoint(): THREE.Vector3 {
+  return new THREE.Vector3(
+    (Math.random() - 0.5) * 2 * BOUNDS_X,
+    0,
+    (Math.random() - 0.5) * 2 * BOUNDS_Z
+  );
 }
 
 // ============================================================================
@@ -167,9 +209,13 @@ function Crystal({
 function SeraphimScene({
   onCollect,
   resetSignal,
+  isGameOver,
+  onGameOver,
 }: {
   onCollect: (type: CrystalType) => void;
   resetSignal: number;
+  isGameOver: boolean;
+  onGameOver: () => void;
 }) {
   const [crystals, setCrystals] = useState<CrystalData[]>(() =>
     Array.from({ length: MAX_CRYSTALS }, randomCrystal)
@@ -183,6 +229,13 @@ function SeraphimScene({
   const cameraRef = useRef<THREE.OrthographicCamera | null>(null);
   const collectingRef = useRef(new Set<number>());
   const { size } = useThree();
+
+  const demonPos = useRef(randomDemonPoint());
+  const demonTarget = useRef(randomDemonPoint());
+  const demonRef = useRef<THREE.Group | null>(null);
+  // Guards against onGameOver firing more than once — the collision stays
+  // true for a few frames while the isGameOver prop propagates back down.
+  const gameOverFiredRef = useRef(false);
 
   // Touch/mouse virtual-joystick state — dragging anywhere on the play field
   // steers the seraphim in the direction of the drag, proportional to how
@@ -202,27 +255,46 @@ function SeraphimScene({
   // that fight entirely.
   const setCameraRef = useCallback((cam: THREE.OrthographicCamera | null) => {
     cameraRef.current = cam;
-    if (cam) cam.position.set(0, 20, 0);
+    if (cam) {
+      cam.position.set(0, CAMERA_HEIGHT, CAMERA_BACK_OFFSET);
+      cam.lookAt(0, 0, 0);
+    }
   }, []);
   const setAvatarRef = useCallback((group: THREE.Group | null) => {
     avatarRef.current = group;
     if (group) group.position.set(0, 1, 0);
   }, []);
+  const setDemonRef = useCallback((group: THREE.Group | null) => {
+    demonRef.current = group;
+    if (group) {
+      group.position.set(demonPos.current.x, 1.8, demonPos.current.z);
+    }
+  }, []);
 
-  const aspect = size.width / Math.max(size.height, 1);
+  // Clamped defensively — a transient 0-height read during the fullscreen
+  // CSS transition (before the browser finishes laying out the new
+  // fixed/inset-0 box) would otherwise produce a huge/degenerate aspect
+  // ratio, stretching the frustum out so far that everything in the scene
+  // shrinks to near-invisible, which reads as "flattened".
+  const aspect =
+    size.width > 0 && size.height > 0 ? size.width / size.height : 1;
+  const clampedAspect = THREE.MathUtils.clamp(aspect, 0.3, 4);
   const frustum = useMemo(
     () => ({
-      left: (-FRUSTUM_SIZE * aspect) / 2,
-      right: (FRUSTUM_SIZE * aspect) / 2,
+      left: (-FRUSTUM_SIZE * clampedAspect) / 2,
+      right: (FRUSTUM_SIZE * clampedAspect) / 2,
       top: FRUSTUM_SIZE / 2,
       bottom: -FRUSTUM_SIZE / 2,
     }),
-    [aspect]
+    [clampedAspect]
   );
 
   const resetBoard = useCallback(() => {
     playerPos.current.set(0, 0, 0);
     collectingRef.current.clear();
+    demonPos.current.copy(randomDemonPoint());
+    demonTarget.current.copy(randomDemonPoint());
+    gameOverFiredRef.current = false;
     setCrystals(Array.from({ length: MAX_CRYSTALS }, randomCrystal));
   }, []);
 
@@ -286,6 +358,10 @@ function SeraphimScene({
   };
 
   useFrame((state, delta) => {
+    // Freeze the whole scene the instant the demon catches you — player,
+    // camera, demon, and crystals all hold exactly where they were.
+    if (isGameOver) return;
+
     let dx = 0;
     let dz = 0;
 
@@ -327,11 +403,22 @@ function SeraphimScene({
     // Soft-follow camera — lerping (instead of snapping every frame) means
     // the seraphim visibly drifts within the frame as you steer, with the
     // camera gently catching up, rather than staying pixel-locked to it.
+    // The camera is also tilted back (not a literal straight-down look) —
+    // a camera pointed exactly along the Y axis is near-parallel to the
+    // default up vector, which both makes lookAt's orientation unstable and
+    // views the model's flat wing sheets edge-on (reads as "flattened").
+    // Floating crystals also foreshorten to near-zero motion when viewed
+    // straight down, so a tilt is needed for their bob to read at all.
     if (cameraRef.current) {
       const cam = cameraRef.current;
       cam.position.x = THREE.MathUtils.lerp(cam.position.x, player.x, 0.09);
-      cam.position.z = THREE.MathUtils.lerp(cam.position.z, player.z, 0.09);
-      cam.lookAt(cam.position.x, 0, cam.position.z);
+      cam.position.z = THREE.MathUtils.lerp(
+        cam.position.z,
+        player.z + CAMERA_BACK_OFFSET,
+        0.09
+      );
+      cam.position.y = CAMERA_HEIGHT;
+      cam.lookAt(cam.position.x, 0, cam.position.z - CAMERA_BACK_OFFSET);
     }
 
     const t = state.clock.getElapsedTime();
@@ -365,6 +452,43 @@ function SeraphimScene({
         collectingRef.current.add(c.id);
       }
     }
+
+    // Demon wander AI — steers toward a random point until it arrives, then
+    // picks a new one, so it roams the play field rather than following any
+    // fixed path.
+    const demon = demonPos.current;
+    const toTarget = new THREE.Vector3().subVectors(demonTarget.current, demon);
+    const distToTarget = toTarget.length();
+    if (distToTarget < DEMON_RETARGET_DIST) {
+      demonTarget.current.copy(randomDemonPoint());
+    } else {
+      toTarget.normalize();
+      demon.addScaledVector(toTarget, DEMON_SPEED * delta);
+    }
+    if (demonRef.current) {
+      demonRef.current.position.set(
+        demon.x,
+        1.8 + Math.sin(t * 1.5) * 0.2,
+        demon.z
+      );
+      if (distToTarget >= DEMON_RETARGET_DIST) {
+        const angle = Math.atan2(toTarget.x, toTarget.z);
+        let angleDelta = angle - demonRef.current.rotation.y;
+        angleDelta = Math.atan2(Math.sin(angleDelta), Math.cos(angleDelta));
+        demonRef.current.rotation.y += angleDelta * 0.1;
+      }
+    }
+
+    // Demon vs. player collision — both vanish and the run ends.
+    const ddx = demon.x - player.x;
+    const ddz = demon.z - player.z;
+    if (
+      !gameOverFiredRef.current &&
+      Math.sqrt(ddx * ddx + ddz * ddz) < DEMON_COLLISION_RADIUS
+    ) {
+      gameOverFiredRef.current = true;
+      onGameOver();
+    }
   });
 
   return (
@@ -395,12 +519,25 @@ function SeraphimScene({
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
-      <group ref={setAvatarRef} scale={SERAPHIM_SCALE}>
-        <pointLight color="#FFDFA0" intensity={1.2} distance={8} />
-        <Suspense fallback={null}>
-          <SeraphimAvatarModel avatarRef={avatarRef} />
-        </Suspense>
-      </group>
+      {/* Both vanish instantly on contact — conditional rendering rather
+          than a fade, matching "vanish" literally. */}
+      {!isGameOver && (
+        <group ref={setAvatarRef} scale={SERAPHIM_SCALE}>
+          <pointLight color="#FFDFA0" intensity={1.2} distance={8} />
+          <Suspense fallback={null}>
+            <SeraphimAvatarModel avatarRef={avatarRef} />
+          </Suspense>
+        </group>
+      )}
+
+      {!isGameOver && (
+        <group ref={setDemonRef} scale={DEMON_SCALE}>
+          <pointLight color="#ff3344" intensity={1.2} distance={8} />
+          <Suspense fallback={null}>
+            <DemonAvatarModel demonRef={demonRef} />
+          </Suspense>
+        </group>
+      )}
 
       {crystals.map((c) => (
         <Crystal
@@ -498,13 +635,13 @@ function SkyBackground() {
   );
 }
 
-function TrackingEye() {
+// A purely decorative moon that watches the cursor — not a control. Kept
+// visually separate from the HUD/legend so it doesn't get mistaken for one.
+function TrackingMoon() {
   const irisRef = useRef<HTMLDivElement>(null);
-  const idle = useRef(true);
 
   useEffect(() => {
     const handleMove = (clientX: number, clientY: number) => {
-      idle.current = false;
       const iris = irisRef.current;
       if (!iris) return;
       const dx = clientX - window.innerWidth / 2;
@@ -522,7 +659,6 @@ function TrackingEye() {
       if (t) handleMove(t.clientX, t.clientY);
     };
     const handleLeave = () => {
-      idle.current = true;
       irisRef.current?.classList.add(
         "animate-[seraphim-iris-idle_10s_ease-in-out_infinite]"
       );
@@ -582,7 +718,7 @@ function HUD({
           <span className="text-yellow-300">{score}</span>
         </h3>
         <p className="text-xs text-white/80 drop-shadow">
-          Drag, WASD, or arrows to move · R to reset
+          Drag, WASD, or arrows to move · R to reset · avoid the demon 👹
         </p>
         <div className="mt-2 flex flex-col gap-1 text-xs">
           {CRYSTAL_TYPES.map((t) => (
@@ -612,18 +748,52 @@ function HUD({
   );
 }
 
+function GameOverOverlay({
+  score,
+  onReset,
+}: {
+  score: number;
+  onReset: () => void;
+}) {
+  return (
+    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-black/70 text-center text-white">
+      <span className="animate-[thunder-burst_0.5s_ease-out] text-7xl">
+        ⚡
+      </span>
+      <h2 className="text-2xl font-bold">The demon caught you!</h2>
+      <p className="text-lg">
+        Final Score: <span className="font-bold text-yellow-300">{score}</span>
+      </p>
+      <button
+        type="button"
+        onClick={onReset}
+        className="btn btn-primary mt-2"
+      >
+        Play Again
+      </button>
+    </div>
+  );
+}
+
 const INITIAL_COUNTS: Record<CrystalType, number> = { 0: 0, 1: 0, 2: 0, 3: 0 };
 
 export default function SeraphimCrystalGame({
   className = "",
+  onScoreSubmitted,
 }: {
   className?: string;
+  onScoreSubmitted?: () => void;
 }) {
   const [score, setScore] = useState(0);
   const [counts, setCounts] = useState<Record<CrystalType, number>>(
     INITIAL_COUNTS
   );
   const [resetSignal, setResetSignal] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(false);
+
+  const scoreRef = useRef(score);
+  scoreRef.current = score;
+  const scoreSubmittedRef = useRef(false);
 
   const handleCollect = (type: CrystalType) => {
     playWooshSound();
@@ -631,31 +801,61 @@ export default function SeraphimCrystalGame({
     setCounts((c) => ({ ...c, [type]: c[type] + 1 }));
   };
 
+  const handleGameOver = () => {
+    playThunderSound();
+    setIsGameOver(true);
+  };
+
+  useEffect(() => {
+    if (!isGameOver || scoreSubmittedRef.current) return;
+    scoreSubmittedRef.current = true;
+    submitSeraphimScore(scoreRef.current).then(() => {
+      onScoreSubmitted?.();
+    });
+  }, [isGameOver, onScoreSubmitted]);
+
   const handleReset = () => {
     setScore(0);
     setCounts(INITIAL_COUNTS);
+    setIsGameOver(false);
+    scoreSubmittedRef.current = false;
     setResetSignal((n) => n + 1);
   };
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isMaximized, toggleMaximize } = useGameFullscreen();
 
   return (
     <div
       ref={containerRef}
-      className={`relative h-full w-full ${className}`}
+      className={`relative h-full w-full ${
+        isMaximized ? "!fixed !inset-0 !z-[100] !rounded-none" : ""
+      } ${className}`}
       onPointerDown={unlockAudio}
     >
       <SkyBackground />
+      {/* key forces a full remount (fresh WebGL context + size measurement)
+          when the fullscreen state flips, instead of risking a stale/
+          transient size from mid-transition getting stuck. */}
       <Canvas
+        key={isMaximized ? "fullscreen" : "normal"}
         gl={{ antialias: true, alpha: true }}
         dpr={[1, 2]}
         style={{ touchAction: "none" }}
       >
-        <SeraphimScene onCollect={handleCollect} resetSignal={resetSignal} />
+        <SeraphimScene
+          onCollect={handleCollect}
+          resetSignal={resetSignal}
+          isGameOver={isGameOver}
+          onGameOver={handleGameOver}
+        />
       </Canvas>
-      <TrackingEye />
+      <TrackingMoon />
       <HUD score={score} counts={counts} onReset={handleReset} />
-      <FullscreenButton containerRef={containerRef} />
+      <FullscreenButton isMaximized={isMaximized} onToggle={toggleMaximize} />
+      {isGameOver && (
+        <GameOverOverlay score={score} onReset={handleReset} />
+      )}
     </div>
   );
 }

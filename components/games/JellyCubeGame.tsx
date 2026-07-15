@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import FullscreenButton from "./FullscreenButton";
+import { useGameFullscreen } from "./useGameFullscreen";
 
 type PhaseName = "INHALE" | "HOLD" | "EXHALE" | "REST";
 
@@ -63,6 +64,7 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
   const [statusText, setStatusText] = useState("Ready");
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isMaximized, toggleMaximize } = useGameFullscreen();
   const cubeRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<HTMLDivElement>(null);
@@ -210,7 +212,9 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
   return (
     <div
       ref={containerRef}
-      className={`relative flex h-full w-full flex-col items-center justify-center gap-4 overflow-y-auto bg-gradient-to-br from-[#a4c5c7] to-[#2D3F48] p-6 text-white ${className}`}
+      className={`relative flex h-full w-full flex-col items-center justify-center gap-4 overflow-y-auto bg-gradient-to-br from-[#a4c5c7] to-[#2D3F48] p-6 text-white ${
+        isMaximized ? "!fixed !inset-0 !z-[100] !rounded-none" : ""
+      } ${className}`}
     >
       <div className="absolute left-2 right-14 top-2 flex flex-wrap justify-start gap-1.5 sm:left-4 sm:right-16 sm:top-5 sm:gap-2">
         {(Object.keys(PATTERNS) as PatternKey[]).map((key) => (
@@ -288,7 +292,7 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/15 px-3 py-1 text-center text-[10px] text-white/85 backdrop-blur sm:bottom-4 sm:px-5 sm:py-2 sm:text-sm">
         Cycles Completed: {cycleCount}
       </div>
-      <FullscreenButton containerRef={containerRef} />
+      <FullscreenButton isMaximized={isMaximized} onToggle={toggleMaximize} />
     </div>
   );
 }

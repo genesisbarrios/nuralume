@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import SeraphimLeaderboard from "@/components/games/SeraphimLeaderboard";
 
 const PopItGame = dynamic(() => import("@/components/games/PopItGame"), {
   ssr: false,
@@ -43,14 +44,14 @@ const GAMES = [
   },
   {
     id: "seraphim",
-    label: "Seraphim Crystal Collector",
+    label: "Crystal Collector",
     description:
-      "Wander the sky and gather drifting crystals — WASD or arrow keys to move, R to reset.",
+      "Wander the sky and gather drifting crystals, but watch out for the demon — WASD or arrow keys to move, R to reset.",
     Component: SeraphimCrystalGame,
   },
   {
     id: "jelly-cube",
-    label: "Jelly Cube Breathwork",
+    label: "Breathwork",
     description:
       "A guided breathing cube — pick a pattern and follow the squeeze in and out.",
     Component: JellyCubeGame,
@@ -61,6 +62,7 @@ export default function GamesView() {
   const [activeId, setActiveId] = useState<(typeof GAMES)[number]["id"]>(
     GAMES[0].id
   );
+  const [leaderboardRefresh, setLeaderboardRefresh] = useState(0);
   const activeGame = GAMES.find((g) => g.id === activeId) ?? GAMES[0];
   const ActiveComponent = activeGame.Component;
 
@@ -85,8 +87,17 @@ export default function GamesView() {
         {activeGame.description}
       </p>
       <div className="h-[60vh] min-h-[360px] overflow-hidden rounded-2xl bg-base-200">
-        <ActiveComponent />
+        {activeId === "seraphim" ? (
+          <SeraphimCrystalGame
+            onScoreSubmitted={() => setLeaderboardRefresh((n) => n + 1)}
+          />
+        ) : (
+          <ActiveComponent />
+        )}
       </div>
+      {activeId === "seraphim" && (
+        <SeraphimLeaderboard refreshSignal={leaderboardRefresh} />
+      )}
     </div>
   );
 }

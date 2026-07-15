@@ -28,7 +28,7 @@ html {
   }
 }
 
-/* Seraphim Crystal Collector — drifting sky background + idle eye animation. */
+/* Seraphim Crystal Collector — drifting sky background + idle moon/eye animation. */
 @keyframes seraphim-cloud-drift {
   from {
     transform: translateX(0);
@@ -63,5 +63,23 @@ html {
   }
   100% {
     transform: perspective(200px) rotateX(0deg) rotateY(0deg) translateZ(40px) scale(0.6);
+  }
+}
+
+@keyframes thunder-burst {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
