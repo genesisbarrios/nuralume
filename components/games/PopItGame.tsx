@@ -156,6 +156,16 @@ function bubbleColor(index: number): string {
 function bubbleSizeScale(index: number): number {
   const seed = Math.sin(index * 12.9898) * 43758.5453;
   const fraction = seed - Math.floor(seed);
+
+  // A separate hash (different seed multiplier, so it's not correlated with
+  // `fraction` above) picks out ~15% of bubbles to be noticeably smaller,
+  // sprinkled in rather than every bubble shrinking uniformly.
+  const tinySeed = Math.sin(index * 78.233) * 12345.6789;
+  const tinyFraction = tinySeed - Math.floor(tinySeed);
+  if (tinyFraction < 0.15) {
+    return 0.35 + fraction * 0.15; // 0.35x – 0.5x of BUBBLE_RADIUS
+  }
+
   return 0.75 + fraction * 0.5; // 0.75x – 1.25x of BUBBLE_RADIUS
 }
 

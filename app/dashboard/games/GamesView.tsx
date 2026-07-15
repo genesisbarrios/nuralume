@@ -44,7 +44,7 @@ const GAMES = [
   },
   {
     id: "seraphim",
-    label: "Crystal Collector",
+    label: "Seraphim Crystal Collector",
     description:
       "Wander the sky and gather drifting crystals, but watch out for the demon — WASD or arrow keys to move, R to reset.",
     Component: SeraphimCrystalGame,
