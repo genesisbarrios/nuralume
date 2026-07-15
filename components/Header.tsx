@@ -13,6 +13,7 @@ import ButtonAccount from "./ButtonAccount";
 const links = [
   { href: "/#features", label: "Features" },
   { href: "/blog", label: "Blog" },
+  { href: "/games", label: "Grounding Games" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];

@@ -27,3 +27,41 @@ html {
     display: none;
   }
 }
+
+/* Seraphim Crystal Collector — drifting sky background + idle eye animation. */
+@keyframes seraphim-cloud-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-160vw);
+  }
+}
+
+@keyframes seraphim-star-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes seraphim-iris-idle {
+  0% {
+    transform: perspective(200px) rotateX(0deg) rotateY(0deg) translateZ(40px) scale(0.6);
+  }
+  25% {
+    transform: perspective(200px) rotateX(10deg) rotateY(-12deg) translateZ(40px) scale(0.6);
+  }
+  50% {
+    transform: perspective(200px) rotateX(-8deg) rotateY(14deg) translateZ(40px) scale(0.6);
+  }
+  75% {
+    transform: perspective(200px) rotateX(6deg) rotateY(8deg) translateZ(40px) scale(0.6);
+  }
+  100% {
+    transform: perspective(200px) rotateX(0deg) rotateY(0deg) translateZ(40px) scale(0.6);
+  }
+}

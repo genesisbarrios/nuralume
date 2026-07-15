@@ -9,6 +9,7 @@ import {
   BellRing,
   Moon,
   Fingerprint,
+  Gamepad2,
 } from "lucide-react";
 
 const tabs = [
@@ -18,17 +19,18 @@ const tabs = [
   { href: "/dashboard/music", label: "Healing Music", icon: Music2 },
   { href: "/dashboard/astrology", label: "Astrology", icon: Moon },
   { href: "/dashboard/personality", label: "Personality Tests", icon: Fingerprint },
+  { href: "/dashboard/games", label: "Grounding Games", icon: Gamepad2 },
 ];
 
 // Desktop "sticky note" per-item styling — a light rotation + tint so the rail
 // reads as notes stuck to the notebook page rather than a plain menu.
 const NOTE_STYLES = [
-  "lg:bg-primary/40 lg:-rotate-3",
-  "lg:bg-secondary/40 lg:rotate-2",
-  "lg:bg-accent/40 lg:-rotate-2",
-  "lg:bg-warning/40 lg:rotate-3",
-  "lg:bg-info/40 lg:-rotate-2",
-  "lg:bg-success/40 lg:rotate-2",
+  "lg:border-primary lg:bg-primary/70 lg:-rotate-3",
+  "lg:border-secondary lg:bg-secondary/70 lg:rotate-2",
+  "lg:border-accent lg:bg-accent/70 lg:-rotate-2",
+  "lg:border-warning lg:bg-warning/70 lg:rotate-3",
+  "lg:border-info lg:bg-info/70 lg:-rotate-2",
+  "lg:border-success lg:bg-success/70 lg:rotate-2",
 ];
 
 export function MobileNav() {
@@ -87,9 +89,9 @@ export function DesktopNav() {
             title={tab.label}
             aria-label={tab.label}
             aria-current={isActive ? "page" : undefined}
-            className={`flex h-14 w-16 -mr-4 items-center justify-center rounded-md text-base-content/70 shadow-md transition-all hover:-translate-x-1 hover:shadow-lg ${
+            className={`flex h-14 w-16 -mr-4 items-center justify-center rounded-md border-2 border-transparent text-base-content/70 shadow-md transition-all hover:-translate-x-1 hover:shadow-lg ${
               NOTE_STYLES[index % NOTE_STYLES.length]
-            } ${isActive ? "!-mr-6 !rotate-0 bg-base-100 text-primary ring-2 ring-primary" : ""}`}
+            } ${isActive ? "!-mr-6 !rotate-0 border-primary bg-base-100 text-primary ring-2 ring-primary" : ""}`}
           >
             <tab.icon className="h-5 w-5" strokeWidth={isActive ? 2.5 : 2} />
             <span className="sr-only">{tab.label}</span>
