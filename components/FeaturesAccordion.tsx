@@ -21,7 +21,7 @@ const features: Feature[] = [
     icon: Music2,
     title: "Healing Music",
     description:
-      "Brain wave tracks, Solfeggio frequencies, and binaural beats, organized into simple, focused sessions you can play anytime.",
+      "Brain wave tracks, Sound Healing, and binaural beats, organized into simple, focused sessions you can play anytime.",
   },
   {
     icon: Sparkles,

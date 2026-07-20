@@ -79,6 +79,16 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     tag: "Affirmations",
     emoji: "🪞",
   },
+  {
+    slug: "sound-healing-sound-therapy-guide",
+    title: "Sound Healing and Sound Therapy: A Beginner's Guide",
+    excerpt:
+      "Singing bowls, gongs, tuning forks, sound baths: what sound healing actually involves, what the research says, and how to try it yourself.",
+    date: "2026-07-20",
+    readTime: "7 min read",
+    tag: "Sound Healing",
+    emoji: "🎶",
+  },
 ];
 
 export function getBlogPost(slug: string) {

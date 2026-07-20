@@ -12,6 +12,8 @@ export const metadata: Metadata = {
     "how music affects the brain",
     "binaural beats",
     "solfeggio frequencies",
+    "sound healing",
+    "sound therapy",
     "brainwave entrainment",
   ],
   openGraph: {
