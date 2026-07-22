@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BlogPostLayout from "@/components/BlogPostLayout";
+import BookRecommendations from "@/components/BookRecommendations";
 import { getBlogPost } from "@/libs/blogPosts";
 
 const post = getBlogPost("what-is-the-law-of-one")!;
@@ -81,6 +82,30 @@ export default function Page() {
         ideal? Those questions are worth sitting with regardless of where you
         land on the material itself.
       </p>
+
+      <h2>Books to read</h2>
+      <BookRecommendations
+        books={[
+          {
+            title: "The Law of One, Book One",
+            author: "Ra / Don Elkins / Carla Rueckert / Jim McCarty",
+            imageUrl: "https://covers.openlibrary.org/b/id/697962-L.jpg",
+            url: "https://www.amazon.com/Law-One-Book-Humble-Messenger/dp/0945007019",
+          },
+          {
+            title: "The Law of One, Book Two",
+            author: "Ra / Don Elkins / Carla Rueckert / Jim McCarty",
+            imageUrl: "https://covers.openlibrary.org/b/id/13783111-L.jpg",
+            url: "https://www.amazon.com/Law-One-Book-Two-Messenger/dp/0945007027",
+          },
+          {
+            title: "A Wanderer's Handbook",
+            author: "Carla L. Rueckert",
+            imageUrl: "https://covers.openlibrary.org/b/id/721134-L.jpg",
+            url: "https://www.amazon.com/Wanderers-Handbook-Carla-L-Rueckert/dp/0945007167",
+          },
+        ]}
+      />
     </BlogPostLayout>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BlogPostLayout from "@/components/BlogPostLayout";
+import BookRecommendations from "@/components/BookRecommendations";
 import { getBlogPost } from "@/libs/blogPosts";
 
 const post = getBlogPost("best-hinduism-books-for-beginners")!;
@@ -60,10 +61,10 @@ export default function Page() {
         material above.
       </p>
 
-      <h2>4. Vedanta: A Simple Introduction by any reputable overview author</h2>
+      <h2>4. Vedanta: Heart of Hinduism by Hans Torwesten</h2>
       <p>
         Vedanta is the philosophical school that grew out of the Upanishads,
-        and a solid beginner overview helps connect the concepts across the
+        and Torwesten&apos;s overview helps connect the concepts across the
         texts above into a coherent framework, rather than leaving them as
         isolated ideas.
       </p>
@@ -82,6 +83,42 @@ export default function Page() {
         to the others as questions come up, is a well-worn and effective
         path into the tradition.
       </p>
+
+      <h2>Where to find these books</h2>
+      <BookRecommendations
+        books={[
+          {
+            title: "The Bhagavad Gita",
+            author: "translated by Eknath Easwaran",
+            imageUrl: "https://covers.openlibrary.org/b/id/1955084-L.jpg",
+            url: "https://www.amazon.com/Bhagavad-Gita-2nd-Eknath-Easwaran/dp/1586380192",
+          },
+          {
+            title: "The Upanishads",
+            author: "translated by Eknath Easwaran",
+            imageUrl: "https://covers.openlibrary.org/b/id/1955086-L.jpg",
+            url: "https://www.amazon.com/Upanishads-2nd-Eknath-Easwaran/dp/1586380214",
+          },
+          {
+            title: "Autobiography of a Yogi",
+            author: "Paramahansa Yogananda",
+            imageUrl: "https://covers.openlibrary.org/b/id/805448-L.jpg",
+            url: "https://www.amazon.com/Autobiography-Self-Realization-Fellowship-Paramahansa-Yogananda/dp/0876120796",
+          },
+          {
+            title: "Vedanta: Heart of Hinduism",
+            author: "Hans Torwesten",
+            imageUrl: "https://covers.openlibrary.org/b/id/9685954-L.jpg",
+            url: "https://www.amazon.com/Vedanta-Heart-Hinduism-Hans-Torwesten/dp/0802110428",
+          },
+          {
+            title: "The Hindu Mind",
+            author: "Bansi Pandit",
+            imageUrl: "https://covers.openlibrary.org/b/id/726994-L.jpg",
+            url: "https://www.amazon.com/Hindu-Mind-Bansi-Pandit/dp/0963479849",
+          },
+        ]}
+      />
     </BlogPostLayout>
   );
 }

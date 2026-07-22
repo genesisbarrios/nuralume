@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BlogPostLayout from "@/components/BlogPostLayout";
+import BookRecommendations from "@/components/BookRecommendations";
 import { getBlogPost } from "@/libs/blogPosts";
 
 const post = getBlogPost("meditation-for-beginners")!;
@@ -82,6 +83,30 @@ export default function Page() {
         a gentle binaural beat, can also make it easier to settle in, since
         it gives your attention something soft to rest on besides silence.
       </p>
+
+      <h2>Books to read</h2>
+      <BookRecommendations
+        books={[
+          {
+            title: "Wherever You Go, There You Are",
+            author: "Jon Kabat-Zinn",
+            imageUrl: "https://covers.openlibrary.org/b/id/13536080-L.jpg",
+            url: "https://www.amazon.com/Wherever-You-There-Are-Mindfulness/dp/0306832011",
+          },
+          {
+            title: "10% Happier",
+            author: "Dan Harris",
+            imageUrl: "https://covers.openlibrary.org/b/id/10453375-L.jpg",
+            url: "https://www.amazon.com/10-Happier-Self-Help-Actually-Works/dp/0062265431",
+          },
+          {
+            title: "The Miracle of Mindfulness",
+            author: "Thich Nhat Hanh",
+            imageUrl: "https://covers.openlibrary.org/b/id/8262944-L.jpg",
+            url: "https://www.amazon.com/Miracle-Mindfulness-Introduction-Practice-Meditation/dp/0807012394",
+          },
+        ]}
+      />
     </BlogPostLayout>
   );
 }

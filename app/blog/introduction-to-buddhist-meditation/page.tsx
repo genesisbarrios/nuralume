@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BlogPostLayout from "@/components/BlogPostLayout";
+import BookRecommendations from "@/components/BookRecommendations";
 import { getBlogPost } from "@/libs/blogPosts";
 
 const post = getBlogPost("introduction-to-buddhist-meditation")!;
@@ -76,6 +77,30 @@ export default function Page() {
         sequence, and no requirement to adopt any particular belief system to
         benefit from the practice.
       </p>
+
+      <h2>Books to read</h2>
+      <BookRecommendations
+        books={[
+          {
+            title: "Mindfulness in Plain English",
+            author: "Bhante Henepola Gunaratana",
+            imageUrl: "https://covers.openlibrary.org/b/id/652683-L.jpg",
+            url: "https://www.amazon.com/Mindfulness-English-Bhante-Henepola-Gunaratana/dp/0861719069",
+          },
+          {
+            title: "Loving-Kindness: The Revolutionary Art of Happiness",
+            author: "Sharon Salzberg",
+            imageUrl: "https://covers.openlibrary.org/b/id/817037-L.jpg",
+            url: "https://www.amazon.com/Loving-Kindness-Revolutionary-Happiness-Sharon-Salzberg/dp/1570620377",
+          },
+          {
+            title: "The Experience of Insight",
+            author: "Joseph Goldstein",
+            imageUrl: "https://covers.openlibrary.org/b/id/4280626-L.jpg",
+            url: "https://www.amazon.com/Experience-Insight-Natural-Unfolding/dp/0913300055",
+          },
+        ]}
+      />
     </BlogPostLayout>
   );
 }

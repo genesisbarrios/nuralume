@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BlogPostLayout from "@/components/BlogPostLayout";
+import BookRecommendations from "@/components/BookRecommendations";
 import { getBlogPost } from "@/libs/blogPosts";
 
 const post = getBlogPost("yoga-for-mind-body-healing")!;
@@ -77,6 +78,30 @@ export default function Page() {
         stillness feels difficult right now, a short yoga sequence might be
         the better entry point into meditation altogether.
       </p>
+
+      <h2>Books to read</h2>
+      <BookRecommendations
+        books={[
+          {
+            title: "Light on Yoga",
+            author: "B.K.S. Iyengar",
+            imageUrl: "https://covers.openlibrary.org/b/id/8244-L.jpg",
+            url: "https://www.amazon.com/Light-Yoga-Bible-Modern/dp/0805210318",
+          },
+          {
+            title: "The Heart of Yoga",
+            author: "T.K.V. Desikachar",
+            imageUrl: "https://covers.openlibrary.org/b/id/1650716-L.jpg",
+            url: "https://www.amazon.com/Heart-Yoga-Developing-Personal-Practice/dp/0892815337",
+          },
+          {
+            title: "Yoga Anatomy",
+            author: "Leslie Kaminoff",
+            imageUrl: "https://covers.openlibrary.org/b/id/462290-L.jpg",
+            url: "https://www.amazon.com/Yoga-Anatomy-Leslie-Kaminoff/dp/0736062785",
+          },
+        ]}
+      />
     </BlogPostLayout>
   );
 }

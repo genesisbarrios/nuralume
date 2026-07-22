@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BlogPostLayout from "@/components/BlogPostLayout";
+import BookRecommendations from "@/components/BookRecommendations";
 import { getBlogPost } from "@/libs/blogPosts";
 
 const post = getBlogPost("what-are-brain-waves-and-how-music-affects-the-brain")!;
@@ -146,6 +147,30 @@ export default function Page() {
         that toolkit — headphones on, one track at a time, paying attention
         to what actually shifts how you feel.
       </p>
+
+      <h2>Books to read</h2>
+      <BookRecommendations
+        books={[
+          {
+            title: "This Is Your Brain on Music",
+            author: "Daniel J. Levitin",
+            imageUrl: "https://covers.openlibrary.org/b/id/362325-L.jpg",
+            url: "https://www.amazon.com/This-Your-Brain-Music-Obsession/dp/0143142321",
+          },
+          {
+            title: "Musicophilia",
+            author: "Oliver Sacks",
+            imageUrl: "https://covers.openlibrary.org/b/id/9261340-L.jpg",
+            url: "https://www.amazon.com/Musicophilia-Tales-Music-Oliver-Sacks/dp/1400040817",
+          },
+          {
+            title: "Music, Language, and the Brain",
+            author: "Aniruddh D. Patel",
+            imageUrl: "https://covers.openlibrary.org/b/id/1126238-L.jpg",
+            url: "https://www.amazon.com/Music-Language-Brain-Aniruddh-Patel/dp/0195123751",
+          },
+        ]}
+      />
     </BlogPostLayout>
   );
 }

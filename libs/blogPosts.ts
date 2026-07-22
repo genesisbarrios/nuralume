@@ -89,6 +89,16 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     tag: "Sound Healing",
     emoji: "🎶",
   },
+  {
+    slug: "buddhism-101-core-teachings",
+    title: "Buddhism 101: The Four Noble Truths, the Eightfold Path, and the Major Schools",
+    excerpt:
+      "Beyond meditation: a grounded introduction to what Buddhism actually teaches, where it came from, and how its major schools differ.",
+    date: "2026-07-20",
+    readTime: "9 min read",
+    tag: "Buddhism",
+    emoji: "🪷",
+  },
 ];
 
 export function getBlogPost(slug: string) {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BlogPostLayout from "@/components/BlogPostLayout";
+import BookRecommendations from "@/components/BookRecommendations";
 import { getBlogPost } from "@/libs/blogPosts";
 
 const post = getBlogPost("the-power-of-daily-affirmations")!;
@@ -114,6 +115,30 @@ export default function Page() {
         rarely dramatic day-to-day — it shows up as a slightly different
         first reaction the next time something stressful happens.
       </p>
+
+      <h2>Books to read</h2>
+      <BookRecommendations
+        books={[
+          {
+            title: "You Can Heal Your Life",
+            author: "Louise Hay",
+            imageUrl: "https://covers.openlibrary.org/b/id/715608-L.jpg",
+            url: "https://www.amazon.com/You-Can-Heal-Your-Life/dp/0937611018",
+          },
+          {
+            title: "Mirror Work",
+            author: "Louise Hay",
+            imageUrl: "https://covers.openlibrary.org/b/id/12416061-L.jpg",
+            url: "https://www.amazon.com/Mirror-Work-Days-Heal-Your/dp/1401949827",
+          },
+          {
+            title: "What to Say When You Talk to Yourself",
+            author: "Shad Helmstetter",
+            imageUrl: "https://covers.openlibrary.org/b/id/809459-L.jpg",
+            url: "https://www.amazon.com/What-Say-When-Talk-Yourself/dp/1567310028",
+          },
+        ]}
+      />
     </BlogPostLayout>
   );
 }
