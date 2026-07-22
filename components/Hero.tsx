@@ -19,8 +19,8 @@ export default function Hero() {
         </h1>
 
         <p className="max-w-xl text-lg text-base-content/70">
-          Solfeggio frequencies, binaural beats, daily affirmations, gentle
-          reminders, your horoscope, and personality insights — a calm
+          Sound Healing, daily affirmations, gentle reminders, 
+          your horoscope, and personality insights — a calm
           companion for your mind, every day.
         </p>
 
