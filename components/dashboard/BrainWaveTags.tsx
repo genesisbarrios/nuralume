@@ -50,7 +50,10 @@ export default function BrainWaveTags({
               />
             </svg>
             <div className="leading-tight text-left">
-              <div className="text-xs font-bold">{tag.label}</div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs font-bold">{tag.label}</span>
+                <span className="text-[10px] font-normal opacity-80">{tag.range}</span>
+              </div>
               <div className="text-[10px] font-normal opacity-90">{tag.description}</div>
             </div>
           </button>
