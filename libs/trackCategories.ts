@@ -27,3 +27,18 @@ export const SUBCATEGORY_FALLBACK_IMAGE: Partial<Record<TrackSubcategory, string
   theta: "/brain-waves/theta.jpg",
   gamma: "/brain-waves/gamma.jpg",
 };
+
+export const BRAIN_WAVE_TAGS: {
+  subcategory: TrackSubcategory;
+  label: string;
+  description: string;
+  className: string;
+  // Relative number of wave cycles to draw — higher = faster oscillation.
+  cycles: number;
+}[] = [
+  { subcategory: "gamma", label: "Gamma", description: "Focus, Synchronize", className: "bg-purple-600 text-white", cycles: 9 },
+  { subcategory: "beta", label: "Beta", description: "Concentrate, Think", className: "bg-blue-600 text-white", cycles: 7 },
+  { subcategory: "alpha", label: "Alpha", description: "Meditate, Create, Relax", className: "bg-emerald-600 text-white", cycles: 5 },
+  { subcategory: "theta", label: "Theta", description: "Visualize, Dream", className: "bg-orange-500 text-white", cycles: 3 },
+  { subcategory: "delta", label: "Delta", description: "Sleep, Restore, Transcend", className: "bg-indigo-700 text-white", cycles: 1.5 },
+];

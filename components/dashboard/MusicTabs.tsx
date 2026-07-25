@@ -6,6 +6,7 @@ import type { Track } from "@/libs/trackCategories";
 import { CATEGORY_LABELS } from "@/libs/trackCategories";
 import type { TrackCategory } from "@/types/database";
 import MusicPlayer from "./MusicPlayer";
+import BrainWaveTags from "./BrainWaveTags";
 
 const FloatingCrystal = dynamic(() => import("./FloatingCrystal"), {
   ssr: false,
@@ -42,6 +43,8 @@ export default function MusicTabs({
           </button>
         ))}
       </div>
+
+      {category === "brain_waves" && <BrainWaveTags />}
 
       <MusicPlayer tracks={tracksByCategory[category]} />
     </div>
