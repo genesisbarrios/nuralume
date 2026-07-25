@@ -70,7 +70,7 @@ export default function MusicPlayer({ tracks }: { tracks: Track[] }) {
   if (tracks.length === 0) {
     return (
       <p className="rounded-lg bg-base-200 p-4 text-center text-sm text-base-content/60">
-        No tracks yet — add some in Supabase to fill this category.
+        No tracks match this filter yet — try another tag, or add tracks in Supabase.
       </p>
     );
   }

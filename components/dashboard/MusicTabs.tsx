@@ -4,7 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import type { Track } from "@/libs/trackCategories";
 import { CATEGORY_LABELS } from "@/libs/trackCategories";
-import type { TrackCategory } from "@/types/database";
+import type { TrackCategory, TrackSubcategory } from "@/types/database";
 import MusicPlayer from "./MusicPlayer";
 import BrainWaveTags from "./BrainWaveTags";
 
@@ -20,6 +20,12 @@ export default function MusicTabs({
   tracksByCategory: Record<TrackCategory, Track[]>;
 }) {
   const [category, setCategory] = useState<TrackCategory>("solfeggio");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<TrackSubcategory | null>(null);
+
+  const tracks = tracksByCategory[category];
+  const visibleTracks = selectedSubcategory
+    ? tracks.filter((t) => t.subcategory === selectedSubcategory)
+    : tracks;
 
   return (
     <div>
@@ -44,9 +50,17 @@ export default function MusicTabs({
         ))}
       </div>
 
-      <BrainWaveTags />
+      <BrainWaveTags
+        selected={selectedSubcategory}
+        onSelect={(subcat) =>
+          setSelectedSubcategory((prev) => (prev === subcat ? null : subcat))
+        }
+      />
 
-      <MusicPlayer tracks={tracksByCategory[category]} />
+      <MusicPlayer
+        key={`${category}:${selectedSubcategory ?? "all"}`}
+        tracks={visibleTracks}
+      />
     </div>
   );
 }
