@@ -21,7 +21,8 @@ export default function BrainWaveTags() {
       {BRAIN_WAVE_TAGS.map((tag) => (
         <div
           key={tag.subcategory}
-          className={`flex items-center gap-2 rounded-full px-3 py-1.5 ${tag.className}`}
+          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-white"
+          style={{ backgroundColor: tag.color }}
         >
           <svg viewBox="0 0 64 20" className="h-4 w-10 shrink-0" preserveAspectRatio="none">
             <polyline

@@ -32,13 +32,17 @@ export const BRAIN_WAVE_TAGS: {
   subcategory: TrackSubcategory;
   label: string;
   description: string;
-  className: string;
+  // Hex background color, applied inline — these live outside app/ and
+  // components/, which is all Tailwind's `content` config scans, so
+  // Tailwind utility classes referencing color here would never get
+  // generated into the CSS bundle.
+  color: string;
   // Relative number of wave cycles to draw — higher = faster oscillation.
   cycles: number;
 }[] = [
-  { subcategory: "gamma", label: "Gamma", description: "Focus, Synchronize", className: "bg-purple-600 text-white", cycles: 9 },
-  { subcategory: "beta", label: "Beta", description: "Concentrate, Think", className: "bg-blue-600 text-white", cycles: 7 },
-  { subcategory: "alpha", label: "Alpha", description: "Meditate, Create, Relax", className: "bg-emerald-600 text-white", cycles: 5 },
-  { subcategory: "theta", label: "Theta", description: "Visualize, Dream", className: "bg-orange-500 text-white", cycles: 3 },
-  { subcategory: "delta", label: "Delta", description: "Sleep, Restore, Transcend", className: "bg-indigo-700 text-white", cycles: 1.5 },
+  { subcategory: "gamma", label: "Gamma", description: "Focus, Synchronize", color: "#9333ea", cycles: 9 },
+  { subcategory: "beta", label: "Beta", description: "Concentrate, Think", color: "#2563eb", cycles: 7 },
+  { subcategory: "alpha", label: "Alpha", description: "Meditate, Create, Relax", color: "#059669", cycles: 5 },
+  { subcategory: "theta", label: "Theta", description: "Visualize, Dream", color: "#f97316", cycles: 3 },
+  { subcategory: "delta", label: "Delta", description: "Sleep, Restore, Transcend", color: "#4338ca", cycles: 1.5 },
 ];
