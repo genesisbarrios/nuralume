@@ -44,7 +44,7 @@ export default function MusicTabs({
         ))}
       </div>
 
-      {category === "brain_waves" && <BrainWaveTags />}
+      <BrainWaveTags />
 
       <MusicPlayer tracks={tracksByCategory[category]} />
     </div>
