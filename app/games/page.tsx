@@ -3,7 +3,6 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import config from "@/config";
 
 const PopItGame = dynamic(() => import("@/components/games/PopItGame"), {
   ssr: false,
@@ -14,10 +13,17 @@ const PopItGame = dynamic(() => import("@/components/games/PopItGame"), {
   ),
 });
 
+const title = "Grounding Games";
+const description =
+  "A free, no-signup grounding game — drag to spin, tap to pop. Try it right here, no account needed.";
+
 export const metadata: Metadata = {
-  title: `Grounding Games — ${config.appName}`,
-  description:
-    "A free, no-signup grounding game — drag to spin, tap to pop. Try it right here, no account needed.",
+  title,
+  description,
+  keywords: ["grounding games", "fidget game", "anxiety relief game", "free stress relief"],
+  alternates: { canonical: "/games" },
+  openGraph: { title, description, type: "website" },
+  twitter: { card: "summary", title, description },
 };
 
 export default function GamesTrialPage() {

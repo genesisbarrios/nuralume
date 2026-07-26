@@ -4,7 +4,9 @@ import Footer from "@/components/Footer";
 import config from "@/config";
 
 export const metadata: Metadata = {
-  title: `Privacy Policy — ${config.appName}`,
+  title: "Privacy Policy",
+  alternates: { canonical: "/privacy-policy" },
+  robots: { index: true, follow: true },
 };
 
 export default function PrivacyPolicyPage() {

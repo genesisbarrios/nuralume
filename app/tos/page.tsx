@@ -4,7 +4,9 @@ import Footer from "@/components/Footer";
 import config from "@/config";
 
 export const metadata: Metadata = {
-  title: `Terms of Service — ${config.appName}`,
+  title: "Terms of Service",
+  alternates: { canonical: "/tos" },
+  robots: { index: true, follow: true },
 };
 
 export default function TermsPage() {

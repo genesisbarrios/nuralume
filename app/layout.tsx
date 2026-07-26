@@ -12,9 +12,22 @@ const amaticSC = Amatic_SC({
 });
 
 export const metadata: Metadata = {
-  title: `${config.appName} — ${config.tagline}`,
+  title: {
+    default: `${config.appName} — ${config.tagline}`,
+    template: `%s — ${config.appName}`,
+  },
   description: config.appDescription,
+  keywords: [
+    "healing music",
+    "brain waves",
+    "binaural beats",
+    "solfeggio frequencies",
+    "daily affirmations",
+    "meditation app",
+    "sound healing",
+  ],
   metadataBase: new URL(`https://${config.domainName}`),
+  robots: { index: true, follow: true },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -25,6 +38,13 @@ export const metadata: Metadata = {
     description: config.appDescription,
     siteName: config.appName,
     type: "website",
+    images: [{ url: "/nuralume-logo.png", width: 603, height: 722, alt: config.appName }],
+  },
+  twitter: {
+    card: "summary",
+    title: `${config.appName} — ${config.tagline}`,
+    description: config.appDescription,
+    images: ["/nuralume-logo.png"],
   },
 };
 
@@ -35,6 +55,15 @@ export const viewport: Viewport = {
   themeColor: config.colors.main,
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: config.appName,
+  url: `https://${config.domainName}`,
+  logo: `https://${config.domainName}/nuralume-logo.png`,
+  description: config.appDescription,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,6 +72,10 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme={config.colors.theme}>
       <body className={`${inter.variable} ${amaticSC.variable} font-sans antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {children}
         <Toaster position="bottom-center" />
       </body>

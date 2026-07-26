@@ -5,10 +5,16 @@ import Footer from "@/components/Footer";
 import { BLOG_POSTS } from "@/libs/blogPosts";
 import config from "@/config";
 
+const title = "Blog";
+const description =
+  "Guides on meditation, yoga, Buddhist practice, the Law of One, and Hindu philosophy for beginners.";
+
 export const metadata: Metadata = {
-  title: `Blog — ${config.appName}`,
-  description:
-    "Guides on meditation, yoga, Buddhist practice, the Law of One, and Hindu philosophy for beginners.",
+  title,
+  description,
+  alternates: { canonical: "/blog" },
+  openGraph: { title: `${title} — ${config.appName}`, description, type: "website" },
+  twitter: { card: "summary", title: `${title} — ${config.appName}`, description },
 };
 
 export default function BlogIndexPage() {

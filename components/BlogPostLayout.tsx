@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import config from "@/config";
 import { getRelatedPosts, type BlogPostMeta } from "@/libs/blogPosts";
 
 export default function BlogPostLayout({
@@ -13,8 +14,24 @@ export default function BlogPostLayout({
 }) {
   const related = getRelatedPosts(post.slug);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    dateModified: post.date,
+    author: { "@type": "Organization", name: config.appName },
+    publisher: { "@type": "Organization", name: config.appName },
+    mainEntityOfPage: `https://${config.domainName}/blog/${post.slug}`,
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
       <main>
         <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-16">
