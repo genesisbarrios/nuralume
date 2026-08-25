@@ -36,16 +36,23 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-base-200 bg-base-100/90 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold">
+        <Link href="/" className="flex items-center gap-2">
           <Image
             src="/nuralume-icon.png"
-            alt={config.appName}
-            width={800}
-            height={800}
+            alt=""
+            width={400}
+            height={334}
             className="h-9 w-auto"
             priority
           />
-          {config.appName}
+          <Image
+            src="/Nuralume_title.png"
+            alt={config.appName}
+            width={1290}
+            height={253}
+            className="h-5 w-auto"
+            priority
+          />
         </Link>
 
         <div className="hidden items-center gap-6 lg:flex">

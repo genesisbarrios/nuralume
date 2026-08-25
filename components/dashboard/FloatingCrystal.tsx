@@ -4,7 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 
 export default function FloatingCrystal({
-  color = "#3B82F6",
+  color = "#6C4FB6",
   className = "",
 }: {
   color?: string;

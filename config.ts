@@ -69,7 +69,7 @@ const config: ConfigProps = {
   },
   colors: {
     theme: "nuralume",
-    main: "#3B82F6",
+    main: "#6C4FB6",
   },
   auth: {
     loginUrl: "/login",
