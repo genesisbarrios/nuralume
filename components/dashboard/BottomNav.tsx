@@ -22,16 +22,23 @@ const tabs = [
   { href: "/dashboard/games", label: "Grounding Games", icon: Gamepad2 },
 ];
 
-// Desktop "sticky note" per-item styling — a light rotation + tint so the rail
-// reads as notes stuck to the notebook page rather than a plain menu.
-const NOTE_STYLES = [
-  "lg:border-primary lg:bg-primary/70 lg:-rotate-3",
-  "lg:border-secondary lg:bg-secondary/70 lg:rotate-2",
-  "lg:border-accent lg:bg-accent/70 lg:-rotate-2",
-  "lg:border-warning lg:bg-warning/70 lg:rotate-3",
-  "lg:border-info lg:bg-info/70 lg:-rotate-2",
-  "lg:border-success lg:bg-success/70 lg:rotate-2",
+// Each tab gets its own vivid, distinct color — deliberately more varied
+// than the muted brand palette, since the whole point of the "sticky note"
+// rail (and the colored dots on mobile) is a playful, easy-to-scan rainbow
+// rather than on-brand restraint.
+const NAV_COLORS = [
+  "#4F7FE8", // blue
+  "#F2B705", // yellow
+  "#EC6FA0", // pink
+  "#3FBF8F", // teal green
+  "#F2994A", // orange
+  "#8B6FE8", // purple
+  "#38BDF8", // sky blue
 ];
+
+// Desktop "sticky note" per-item rotation so the rail reads as notes stuck to
+// the notebook page rather than a plain menu — color comes from NAV_COLORS.
+const NOTE_ROTATION = ["lg:-rotate-3", "lg:rotate-2", "lg:-rotate-2", "lg:rotate-3", "lg:-rotate-2", "lg:rotate-2"];
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -42,8 +49,9 @@ export function MobileNav() {
       aria-label="Dashboard navigation"
     >
       <ul className="mx-auto flex max-w-lg items-stretch justify-between px-2">
-        {tabs.map((tab) => {
+        {tabs.map((tab, index) => {
           const isActive = pathname.startsWith(tab.href);
+          const color = NAV_COLORS[index % NAV_COLORS.length];
           return (
             <li key={tab.href} className="flex-1">
               <Link
@@ -51,16 +59,14 @@ export function MobileNav() {
                 title={tab.label}
                 aria-label={tab.label}
                 aria-current={isActive ? "page" : undefined}
-                className="flex flex-col items-center justify-center gap-1 py-3 text-white/50 transition-colors hover:text-white/80"
+                className={`flex flex-col items-center justify-center gap-1 py-3 transition-opacity ${
+                  isActive ? "opacity-100" : "opacity-60 hover:opacity-90"
+                }`}
               >
-                <tab.icon
-                  className={`h-6 w-6 ${isActive ? "text-primary" : ""}`}
-                  strokeWidth={isActive ? 2.5 : 2}
-                />
+                <tab.icon className="h-6 w-6" strokeWidth={isActive ? 2.5 : 2} style={{ color }} />
                 <span
-                  className={`h-1 w-1 rounded-full transition-colors ${
-                    isActive ? "bg-primary" : "bg-transparent"
-                  }`}
+                  className="h-1 w-1 rounded-full transition-colors"
+                  style={{ backgroundColor: isActive ? color : "transparent" }}
                 />
                 <span className="sr-only">{tab.label}</span>
               </Link>
@@ -82,6 +88,7 @@ export function DesktopNav() {
     >
       {tabs.map((tab, index) => {
         const isActive = pathname.startsWith(tab.href);
+        const color = NAV_COLORS[index % NAV_COLORS.length];
         return (
           <Link
             key={tab.href}
@@ -89,9 +96,14 @@ export function DesktopNav() {
             title={tab.label}
             aria-label={tab.label}
             aria-current={isActive ? "page" : undefined}
-            className={`flex h-14 w-16 -mr-4 items-center justify-center rounded-md border-2 border-transparent text-base-content/70 shadow-md transition-all hover:-translate-x-1 hover:shadow-lg ${
-              NOTE_STYLES[index % NOTE_STYLES.length]
-            } ${isActive ? "!-mr-6 !rotate-0 border-primary bg-base-100 text-primary ring-2 ring-primary" : ""}`}
+            className={`flex h-14 w-16 -mr-4 items-center justify-center rounded-md border-2 shadow-md transition-all hover:-translate-x-1 hover:shadow-lg ${
+              NOTE_ROTATION[index % NOTE_ROTATION.length]
+            } ${isActive ? "!-mr-6 !rotate-0 bg-base-100" : ""}`}
+            style={
+              isActive
+                ? { borderColor: color, color, boxShadow: `0 0 0 2px ${color}` }
+                : { borderColor: color, backgroundColor: `${color}B3`, color: "#2A2233" }
+            }
           >
             <tab.icon className="h-5 w-5" strokeWidth={isActive ? 2.5 : 2} />
             <span className="sr-only">{tab.label}</span>
