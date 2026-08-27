@@ -34,7 +34,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-base-200 bg-base-100/90 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-primary backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
           <Image
@@ -50,7 +50,7 @@ export default function Header() {
             alt={config.appName}
             width={1290}
             height={253}
-            className="h-5 w-auto"
+            className="h-5 w-auto brightness-0 invert"
             priority
           />
         </Link>
@@ -60,7 +60,7 @@ export default function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-base-content/80 hover:text-primary"
+              className="text-sm font-medium text-white/85 hover:text-white"
             >
               {link.label}
             </Link>
@@ -69,7 +69,7 @@ export default function Header() {
 
         <div className="hidden lg:block">
           {user ? (
-            <ButtonAccount email={user.email ?? null} />
+            <ButtonAccount email={user.email ?? null} className="text-white hover:bg-white/10" />
           ) : (
             <ButtonSignin />
           )}
@@ -77,7 +77,7 @@ export default function Header() {
 
         <button
           type="button"
-          className="btn btn-ghost btn-sm lg:hidden"
+          className="btn btn-ghost btn-sm text-white hover:bg-white/10 lg:hidden"
           aria-label="Toggle menu"
           onClick={() => setIsOpen((v) => !v)}
         >
@@ -86,20 +86,20 @@ export default function Header() {
       </nav>
 
       {isOpen && (
-        <div className="border-t border-base-200 px-4 py-4 lg:hidden">
+        <div className="border-t border-white/10 px-4 py-4 lg:hidden">
           <div className="flex flex-col gap-4">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium"
+                className="text-sm font-medium text-white/85 hover:text-white"
                 onClick={() => setIsOpen(false)}
               >
                 {link.label}
               </Link>
             ))}
             {user ? (
-              <ButtonAccount email={user.email ?? null} />
+              <ButtonAccount email={user.email ?? null} className="text-white hover:bg-white/10" />
             ) : (
               <ButtonSignin />
             )}

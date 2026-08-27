@@ -17,15 +17,21 @@ export default function DashboardShell({
   return (
     <div className="min-h-screen bg-notebook-cover">
       <div className="mx-auto flex max-w-lg items-center justify-between px-5 pt-6 lg:max-w-4xl lg:pl-24">
-        <Link href="/dashboard/home" className="flex items-center text-white">
+        <Link href="/dashboard/home" className="flex items-center gap-2 text-white">
           <Image
             src="/nuralume-icon.png"
-            alt={config.appName}
-            width={800}
-            height={800}
+            alt=""
+            width={400}
+            height={334}
             className="h-8 w-auto"
           />
-          {config.appName}
+          <Image
+            src="/Nuralume_title.png"
+            alt={config.appName}
+            width={1290}
+            height={253}
+            className="h-5 w-auto"
+          />
         </Link>
         <ButtonAccount
           email={userEmail}
