@@ -17,7 +17,7 @@ export default function DashboardShell({
   return (
     <div className="min-h-screen bg-notebook-cover">
       <div className="mx-auto flex max-w-lg items-center justify-between px-5 pt-6 lg:max-w-4xl lg:pl-24">
-        <Link href="/dashboard/home" className="flex items-center gap-2 text-white">
+        <Link href="https://nuralume.xyz" className="flex items-center gap-2 text-white">
           <Image
             src="/nuralume-icon.png"
             alt=""

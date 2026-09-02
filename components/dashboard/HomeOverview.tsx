@@ -6,6 +6,7 @@ import { BellRing, Check, Heart, Moon, Pencil, Sparkles } from "lucide-react";
 import PageCard from "@/components/dashboard/PageCard";
 import ApiFallbackNotice from "@/components/dashboard/ApiFallbackNotice";
 import BirthDataForm from "@/components/dashboard/BirthDataForm";
+import DeleteAccountButton from "@/components/dashboard/DeleteAccountButton";
 import TaskTimer from "@/components/dashboard/TaskTimer";
 import type { ProfileBirthData } from "@/libs/profile";
 import { getProfileBirthData } from "@/libs/profile";
@@ -175,14 +176,19 @@ export default function HomeOverview({
 
       <PageCard title="Your profile">
         {editingProfile ? (
-          <BirthDataForm
-            initial={profile}
-            onSaved={async () => {
-              setEditingProfile(false);
-              setProfile(await getProfileBirthData());
-            }}
-            onCancel={() => setEditingProfile(false)}
-          />
+          <div>
+            <div className="mb-2 flex justify-end">
+              <DeleteAccountButton />
+            </div>
+            <BirthDataForm
+              initial={profile}
+              onSaved={async () => {
+                setEditingProfile(false);
+                setProfile(await getProfileBirthData());
+              }}
+              onCancel={() => setEditingProfile(false)}
+            />
+          </div>
         ) : (
           <div>
             <div className="flex items-start justify-between">
