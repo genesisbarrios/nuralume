@@ -8,6 +8,7 @@ import FAQ from "@/components/FAQ";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import config from "@/config";
+import { defaultOgImage } from "@/libs/seo";
 
 export const metadata: Metadata = {
   title: {
@@ -20,6 +21,13 @@ export const metadata: Metadata = {
     description: config.appDescription,
     type: "website",
     url: "/",
+    images: [defaultOgImage],
+  },
+  twitter: {
+    card: "summary",
+    title: `${config.appName} — ${config.tagline}`,
+    description: config.appDescription,
+    images: [defaultOgImage.url],
   },
 };
 

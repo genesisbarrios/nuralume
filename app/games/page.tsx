@@ -3,6 +3,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { defaultOgImage } from "@/libs/seo";
 
 const PopItGame = dynamic(() => import("@/components/games/PopItGame"), {
   ssr: false,
@@ -22,8 +23,8 @@ export const metadata: Metadata = {
   description,
   keywords: ["grounding games", "fidget game", "anxiety relief game", "free stress relief"],
   alternates: { canonical: "/games" },
-  openGraph: { title, description, type: "website" },
-  twitter: { card: "summary", title, description },
+  openGraph: { title, description, type: "website", images: [defaultOgImage] },
+  twitter: { card: "summary", title, description, images: [defaultOgImage.url] },
 };
 
 export default function GamesTrialPage() {

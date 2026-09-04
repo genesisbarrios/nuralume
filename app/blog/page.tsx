@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { BLOG_POSTS } from "@/libs/blogPosts";
 import config from "@/config";
+import { defaultOgImage } from "@/libs/seo";
 
 const title = "Blog";
 const description =
@@ -13,8 +14,8 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/blog" },
-  openGraph: { title: `${title} — ${config.appName}`, description, type: "website" },
-  twitter: { card: "summary", title: `${title} — ${config.appName}`, description },
+  openGraph: { title: `${title} — ${config.appName}`, description, type: "website", images: [defaultOgImage] },
+  twitter: { card: "summary", title: `${title} — ${config.appName}`, description, images: [defaultOgImage.url] },
 };
 
 export default function BlogIndexPage() {

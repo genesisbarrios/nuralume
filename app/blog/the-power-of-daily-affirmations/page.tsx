@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import BlogPostLayout from "@/components/BlogPostLayout";
 import BookRecommendations from "@/components/BookRecommendations";
 import { getBlogPost } from "@/libs/blogPosts";
+import { defaultOgImage } from "@/libs/seo";
 
 const post = getBlogPost("the-power-of-daily-affirmations")!;
 
@@ -18,9 +19,11 @@ export const metadata: Metadata = {
     title: post.title,
     description: post.excerpt,
     type: "article",
+    images: [defaultOgImage],
   },
   twitter: {
     card: "summary_large_image",
+    images: [defaultOgImage.url],
     title: post.title,
     description: post.excerpt,
   },
