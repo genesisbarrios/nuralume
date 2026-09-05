@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Gem } from "lucide-react";
 import {
   getSeraphimLeaderboard,
   type LeaderboardData,
@@ -31,7 +32,9 @@ export default function SeraphimLeaderboard({
 
   return (
     <div className="mt-4 rounded-2xl bg-base-200 p-4">
-      <h3 className="mb-3 text-lg font-bold">💎 Top Crystal Collectors</h3>
+      <h3 className="mb-3 flex items-center gap-1.5 text-lg font-bold">
+        <Gem className="h-4 w-4 text-primary" /> Top Crystal Collectors
+      </h3>
       <ol className="flex flex-col gap-1.5">
         {data.top.map((entry, i) => {
           const isSelf = data.self?.userId === entry.userId;

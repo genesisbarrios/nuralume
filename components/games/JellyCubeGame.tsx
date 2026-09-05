@@ -1,10 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Wind, Pause, Waves, Smile } from "lucide-react";
 import FullscreenButton from "./FullscreenButton";
 import { useGameFullscreen } from "./useGameFullscreen";
 
 type PhaseName = "INHALE" | "HOLD" | "EXHALE" | "REST";
+
+const PHASE_ICONS: Record<PhaseName, typeof Wind> = {
+  INHALE: Wind,
+  HOLD: Pause,
+  EXHALE: Waves,
+  REST: Smile,
+};
 
 interface Phase {
   name: PhaseName;
@@ -21,25 +29,25 @@ const PATTERNS = {
   box: {
     label: "Box (4-4-4-4)",
     phases: [
-      { name: "INHALE", duration: 4, instruction: "🌬️ Breathe In..." },
-      { name: "HOLD", duration: 4, instruction: "⏸️ Hold..." },
-      { name: "EXHALE", duration: 4, instruction: "🌊 Breathe Out..." },
-      { name: "REST", duration: 4, instruction: "😌 Rest..." },
+      { name: "INHALE", duration: 4, instruction: "Breathe In..." },
+      { name: "HOLD", duration: 4, instruction: "Hold..." },
+      { name: "EXHALE", duration: 4, instruction: "Breathe Out..." },
+      { name: "REST", duration: 4, instruction: "Rest..." },
     ],
   },
   twoToOne: {
     label: "2-to-1",
     phases: [
-      { name: "INHALE", duration: 4, instruction: "🌬️ Breathe In..." },
-      { name: "EXHALE", duration: 8, instruction: "🌊 Breathe Out..." },
+      { name: "INHALE", duration: 4, instruction: "Breathe In..." },
+      { name: "EXHALE", duration: 8, instruction: "Breathe Out..." },
     ],
   },
   fourSevenEight: {
     label: "4-7-8",
     phases: [
-      { name: "INHALE", duration: 4, instruction: "🌬️ Breathe In..." },
-      { name: "HOLD", duration: 7, instruction: "⏸️ Hold..." },
-      { name: "EXHALE", duration: 8, instruction: "🌊 Breathe Out..." },
+      { name: "INHALE", duration: 4, instruction: "Breathe In..." },
+      { name: "HOLD", duration: 7, instruction: "Hold..." },
+      { name: "EXHALE", duration: 8, instruction: "Breathe Out..." },
     ],
   },
 } satisfies Record<string, Pattern>;
@@ -62,6 +70,7 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
   const [isRunning, setIsRunning] = useState(false);
   const [cycleCount, setCycleCount] = useState(0);
   const [statusText, setStatusText] = useState("Ready");
+  const [phaseName, setPhaseName] = useState<PhaseName | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { isMaximized, toggleMaximize } = useGameFullscreen();
@@ -103,6 +112,7 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
       scheduledTimeout.current = null;
     }
     setStatusText("Ready");
+    setPhaseName(null);
     if (timerRef.current) timerRef.current.textContent = "0";
     applyCubeTransform(1, 1, 0);
   }, [applyCubeTransform]);
@@ -123,6 +133,7 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
       const duration = phase.duration;
       phaseStartTime.current = performance.now();
       setStatusText(phase.instruction);
+      setPhaseName(phase.name);
 
       const updateTimer = () => {
         if (!runningRef.current) return;
@@ -279,7 +290,12 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
       </div>
 
       <div className="absolute bottom-2 left-2 flex flex-col items-start sm:bottom-4 sm:left-4">
-        <div className="min-h-[1.6rem] text-left text-xs font-bold tracking-wide drop-shadow sm:min-h-[2.4rem] sm:text-xl">
+        <div className="flex min-h-[1.6rem] items-center gap-1.5 text-left text-xs font-bold tracking-wide drop-shadow sm:min-h-[2.4rem] sm:gap-2 sm:text-xl">
+          {phaseName &&
+            (() => {
+              const PhaseIcon = PHASE_ICONS[phaseName];
+              return <PhaseIcon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />;
+            })()}
           {statusText}
         </div>
         <div

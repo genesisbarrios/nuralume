@@ -1,3 +1,16 @@
+import {
+  Flower2,
+  PersonStanding,
+  CircleDashed,
+  Sparkles,
+  BookOpen,
+  Brain,
+  Quote,
+  Music,
+  Flower,
+  type LucideIcon,
+} from "lucide-react";
+
 export interface BlogPostMeta {
   slug: string;
   title: string;
@@ -5,7 +18,7 @@ export interface BlogPostMeta {
   date: string;
   readTime: string;
   tag: string;
-  emoji: string;
+  icon: LucideIcon;
 }
 
 export const BLOG_POSTS: BlogPostMeta[] = [
@@ -17,7 +30,7 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     date: "2026-01-12",
     readTime: "6 min read",
     tag: "Meditation",
-    emoji: "🧘",
+    icon: Flower2,
   },
   {
     slug: "yoga-for-mind-body-healing",
@@ -27,7 +40,7 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     date: "2026-02-03",
     readTime: "7 min read",
     tag: "Yoga",
-    emoji: "🤸",
+    icon: PersonStanding,
   },
   {
     slug: "introduction-to-buddhist-meditation",
@@ -37,7 +50,7 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     date: "2026-03-10",
     readTime: "8 min read",
     tag: "Buddhism",
-    emoji: "☸️",
+    icon: CircleDashed,
   },
   {
     slug: "what-is-the-law-of-one",
@@ -47,7 +60,7 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     date: "2026-04-18",
     readTime: "9 min read",
     tag: "Law of One",
-    emoji: "✨",
+    icon: Sparkles,
   },
   {
     slug: "best-hinduism-books-for-beginners",
@@ -57,7 +70,7 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     date: "2026-05-22",
     readTime: "5 min read",
     tag: "Reading List",
-    emoji: "📚",
+    icon: BookOpen,
   },
   {
     slug: "what-are-brain-waves-and-how-music-affects-the-brain",
@@ -67,7 +80,7 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     date: "2026-06-19",
     readTime: "9 min read",
     tag: "Neuroscience",
-    emoji: "🧠",
+    icon: Brain,
   },
   {
     slug: "the-power-of-daily-affirmations",
@@ -77,7 +90,7 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     date: "2026-07-03",
     readTime: "6 min read",
     tag: "Affirmations",
-    emoji: "🪞",
+    icon: Quote,
   },
   {
     slug: "sound-healing-sound-therapy-guide",
@@ -87,7 +100,7 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     date: "2026-07-20",
     readTime: "7 min read",
     tag: "Sound Healing",
-    emoji: "🎶",
+    icon: Music,
   },
   {
     slug: "buddhism-101-core-teachings",
@@ -97,7 +110,7 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     date: "2026-07-20",
     readTime: "9 min read",
     tag: "Buddhism",
-    emoji: "🪷",
+    icon: Flower,
   },
 ];
 

@@ -42,7 +42,7 @@ export default function BlogPostLayout({
             >
               &larr; Back to blog
             </Link>
-            <div className="mt-4 text-5xl">{post.emoji}</div>
+            <post.icon className="mx-auto mt-4 h-12 w-12 text-primary" strokeWidth={1.5} />
             <span className="badge badge-primary badge-outline mt-4">
               {post.tag}
             </span>
@@ -90,7 +90,7 @@ export default function BlogPostLayout({
                 href={`/blog/${r.slug}`}
                 className="rounded-xl border border-base-300 p-4 transition-colors hover:border-primary"
               >
-                <div className="text-2xl">{r.emoji}</div>
+                <r.icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
                 <p className="mt-2 text-sm font-semibold">{r.title}</p>
                 <p className="mt-1 text-xs text-base-content/60">
                   {r.readTime}

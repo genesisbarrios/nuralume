@@ -39,7 +39,7 @@ export default function BlogIndexPage() {
               className="flex flex-col rounded-2xl border border-base-300 p-6 transition-colors hover:border-primary"
             >
               <div className="flex items-center justify-between">
-                <span className="text-3xl">{post.emoji}</span>
+                <post.icon className="h-8 w-8 text-primary" strokeWidth={1.5} />
                 <span className="badge badge-primary badge-outline">
                   {post.tag}
                 </span>

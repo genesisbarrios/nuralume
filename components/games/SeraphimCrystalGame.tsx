@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Ghost, Sparkle, Zap } from "lucide-react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrthographicCamera, useAnimations, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -713,12 +714,13 @@ function HUD({
   return (
     <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 text-white">
       <div>
-        <h3 className="text-lg font-bold drop-shadow">
-          ✧ Seraphim ✧{" "}
+        <h3 className="flex items-center gap-1.5 text-lg font-bold drop-shadow">
+          <Sparkle className="h-4 w-4" /> Seraphim <Sparkle className="h-4 w-4" />{" "}
           <span className="text-yellow-300">{score}</span>
         </h3>
-        <p className="text-xs text-white/80 drop-shadow">
-          Drag, WASD, or arrows to move · R to reset · avoid the demon 👹
+        <p className="flex items-center gap-1 text-xs text-white/80 drop-shadow">
+          Drag, WASD, or arrows to move · R to reset · avoid the demon{" "}
+          <Ghost className="h-3.5 w-3.5" />
         </p>
         <div className="mt-2 flex flex-col gap-1 text-xs">
           {CRYSTAL_TYPES.map((t) => (
@@ -757,9 +759,7 @@ function GameOverOverlay({
 }) {
   return (
     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-black/70 text-center text-white">
-      <span className="animate-[thunder-burst_0.5s_ease-out] text-7xl">
-        ⚡
-      </span>
+      <Zap className="h-20 w-20 animate-[thunder-burst_0.5s_ease-out] fill-yellow-300 text-yellow-300" />
       <h2 className="text-2xl font-bold">The demon caught you!</h2>
       <p className="text-lg">
         Final Score: <span className="font-bold text-yellow-300">{score}</span>
