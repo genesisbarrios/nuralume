@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Wind, Pause, Waves, Smile } from "lucide-react";
+import { Wind, Pause, Waves, Smile, Square, Play } from "lucide-react";
 import FullscreenButton from "./FullscreenButton";
 import { useGameFullscreen } from "./useGameFullscreen";
 
@@ -251,7 +251,11 @@ export default function JellyCubeGame({ className = "" }: { className?: string }
           isRunning ? "bg-[#4CAF50]" : "bg-[#e94560]"
         }`}
       >
-        {isRunning ? "⏹ Stop" : "▶ Start"}
+        {isRunning ? (
+          <span className="inline-flex items-center gap-1"><Square className="h-3 w-3 fill-current" /> Stop</span>
+        ) : (
+          <span className="inline-flex items-center gap-1"><Play className="h-3 w-3 fill-current" /> Start</span>
+        )}
       </button>
 
       <div
