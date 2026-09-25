@@ -671,7 +671,7 @@ function NumerologyPanel({
   }
 
   const rows = [
-    { label: "Life Path", value: result.lifePathNumber },
+    { label: "Life Path", value: result.lifePathNumber, type: result.lifePathType },
     { label: "Destiny", value: result.destinyNumber },
     { label: "Soul Urge", value: result.soulUrgeNumber },
   ];
@@ -695,7 +695,8 @@ function NumerologyPanel({
         {rows.map((row) => (
           <p key={row.label} className="text-sm">
             <span className="font-semibold">
-              {row.label} {row.value}:
+              {row.label} {row.value}
+              {row.type ? `: ${row.type}` : ":"}
             </span>{" "}
             {result.meanings[row.value]}
           </p>

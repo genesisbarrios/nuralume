@@ -63,8 +63,24 @@ export const NUMBER_MEANINGS: Record<number, string> = {
   33: "Master number: selfless devotion and healing through service.",
 };
 
+export const LIFE_PATH_TYPES: Record<number, string> = {
+  1: "The Leader",
+  2: "The Diplomat",
+  3: "The Communicator",
+  4: "The Builder",
+  5: "The Adventurer",
+  6: "The Nurturer",
+  7: "The Seeker",
+  8: "The Powerhouse",
+  9: "The Humanitarian",
+  11: "The Intuitive",
+  22: "The Master Builder",
+  33: "The Master Healer",
+};
+
 export interface NumerologyProfile {
   lifePathNumber: number;
+  lifePathType: string;
   destinyNumber: number;
   soulUrgeNumber: number;
   meanings: typeof NUMBER_MEANINGS;
@@ -75,8 +91,10 @@ export function getNumerologyProfile(
   fullName: string,
   birthDateIso: string
 ): NumerologyProfile {
+  const lifePathNumber = calculateLifePathNumber(birthDateIso);
   return {
-    lifePathNumber: calculateLifePathNumber(birthDateIso),
+    lifePathNumber,
+    lifePathType: LIFE_PATH_TYPES[lifePathNumber] ?? "",
     destinyNumber: calculateDestinyNumber(fullName),
     soulUrgeNumber: calculateSoulUrgeNumber(fullName),
     meanings: NUMBER_MEANINGS,
