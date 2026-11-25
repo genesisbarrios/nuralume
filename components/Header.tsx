@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
@@ -21,6 +22,18 @@ const links = [
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  // Homepage: the nav floats transparent over the dark hero, and turns solid
+  // once you scroll (or open the mobile menu). Other pages keep the solid bar.
+  const isHome = usePathname() === "/";
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    if (!isHome) return;
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+  const solid = !isHome || scrolled || isOpen;
 
   useEffect(() => {
     const supabase = createClient();
@@ -34,7 +47,11 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/10 bg-primary backdrop-blur">
+    <header
+      className={`${isHome ? "fixed inset-x-0" : "sticky"} top-0 z-30 border-b transition-colors duration-300 ${
+        solid ? "border-white/10 bg-primary backdrop-blur" : "border-transparent bg-transparent"
+      }`}
+    >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
           <Image
