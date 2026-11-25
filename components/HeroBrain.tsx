@@ -67,7 +67,7 @@ export default function HeroBrain() {
           type="button"
           onClick={go}
           aria-label={`Listen to ${picked.tag.label} brain wave music`}
-          className={`glass-wave-card absolute left-1/2 top-1/2 z-20 w-[min(86vw,340px)] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/20 bg-white/10 p-5 text-left text-[#F2E8DC] shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl ${
+          className={`glass-wave-card absolute -top-3 left-0 z-20 sm:top-0 w-[min(66vw,250px)] origin-top-left rounded-2xl border border-white/20 bg-white/10 p-4 text-left text-[#F2E8DC] shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl ${
             leaving ? "glass-wave-card--leave" : ""
           }`}
           style={{ boxShadow: `0 8px 40px rgba(0,0,0,.45), 0 0 50px -10px ${picked.tag.color}` }}
@@ -78,21 +78,21 @@ export default function HeroBrain() {
             aria-label="Close"
             onClick={(e) => { e.stopPropagation(); setPicked(null); }}
             onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setPicked(null); } }}
-            className="absolute right-3 top-3 rounded-full p-1.5 text-[#F2E8DC]/70 hover:bg-white/10 hover:text-white"
+            className="absolute right-2 top-2 rounded-full p-1 text-[#F2E8DC]/70 hover:bg-white/10 hover:text-white"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </span>
           <div className="flex items-center gap-2.5">
-            <span className="h-3 w-3 rounded-full" style={{ background: picked.tag.color, boxShadow: `0 0 12px ${picked.tag.color}` }} />
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#F2E8DC]/85">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: picked.tag.color, boxShadow: `0 0 12px ${picked.tag.color}` }} />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F2E8DC]/85">
               {picked.tag.range}
             </span>
           </div>
-          <h3 className="mt-2 text-2xl font-extrabold">{picked.tag.label} waves</h3>
+          <h3 className="mt-1.5 text-lg font-extrabold leading-tight">{picked.tag.label} waves</h3>
           <p className="text-sm font-medium text-[#F2CDA6]">{info.state}</p>
-          <p className="mt-3 text-sm leading-relaxed text-[#F2E8DC]/80">{info.about}</p>
-          <p className="mt-3 text-xs text-[#F2E8DC]/60"><span className="font-semibold text-[#F2E8DC]/80">Listen for:</span> {info.listen}</p>
-          <p className="mt-4 text-sm font-semibold" style={{ color: "#fff" }}>
+          <p className="mt-2 text-xs leading-relaxed text-[#F2E8DC]/80">{info.about}</p>
+          <p className="mt-2 hidden text-[11px] leading-snug text-[#F2E8DC]/60 sm:block"><span className="font-semibold text-[#F2E8DC]/80">Listen for:</span> {info.listen}</p>
+          <p className="mt-3 text-xs font-semibold" style={{ color: "#fff" }}>
             {signedIn === false ? "Tap to sign up & listen →" : "Tap to listen →"}
           </p>
         </button>
@@ -103,9 +103,9 @@ export default function HeroBrain() {
 
       <style>{`
         .glass-wave-card { animation: wave-card-in .35s cubic-bezier(.2,.9,.3,1.2) both; }
-        @keyframes wave-card-in { from { opacity: 0; transform: translate(-50%, -46%) scale(.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        @keyframes wave-card-in { from { opacity: 0; transform: translate(8px, 8px) scale(.9); } to { opacity: 1; transform: none; } }
         .glass-wave-card--leave { animation: wave-card-out .45s ease-in forwards; }
-        @keyframes wave-card-out { to { opacity: 0; transform: translate(-50%, -50%) scale(1.25); filter: blur(6px); } }
+        @keyframes wave-card-out { to { opacity: 0; transform: scale(1.2); filter: blur(6px); } }
         .brain-whiteout { animation: brain-white 1.2s ease-in forwards; }
         @keyframes brain-white { 0%, 25% { opacity: 0; } 100% { opacity: 1; } }
         @media (prefers-reduced-motion: reduce) {
