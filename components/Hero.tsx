@@ -26,13 +26,13 @@ export default function Hero() {
 
           {/* "Tune / your / mind." one word per line; the brand name lives in the
               page title, logo and badge */}
-          <h1 className="bg-gradient-to-b from-[#F2CDA6] via-[#B79BFF] to-[#7FA2FF] bg-clip-text pb-2 text-5xl font-extrabold leading-[0.92] tracking-tight text-transparent sm:text-7xl xl:text-8xl">
+          <h1 id="hero-title" className="bg-gradient-to-b from-[#F2CDA6] via-[#B79BFF] to-[#7FA2FF] bg-clip-text pb-2 text-5xl font-extrabold leading-[0.92] tracking-tight text-transparent sm:text-7xl xl:text-8xl">
             <span className="block">Tune</span>
             <span className="block">your</span>
             <span className="block">mind.</span>
           </h1>
 
-          <p className="max-w-xl text-lg text-[#F2E8DC]/75">
+          <p id="hero-copy" className="max-w-xl text-lg text-[#F2E8DC]/75">
             Sound Healing, daily affirmations, gentle reminders,
             your horoscope, and personality insights — a calm
             companion for your mind, every day.

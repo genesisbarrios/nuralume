@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
@@ -20,6 +20,42 @@ export default function HeroBrain() {
   const [picked, setPicked] = useState<{ tag: BrainWaveTag; world: THREE.Vector3 } | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const cardRef = useRef<HTMLButtonElement>(null);
+  const [cardPos, setCardPos] = useState<{ left: number; top: number } | null>(null);
+
+  // Desktop (text left, brain right): the card sits in the gap between the
+  // title and the brain: its right edge 24px before the brain, never closer
+  // than 32px to the end of "Tune / your / mind.", vertically level with
+  // the brain, and lifted if it would reach the description. Phones keep the
+  // default spot.
+  useLayoutEffect(() => {
+    const place = () => {
+      const card = cardRef.current;
+      const wrap = card?.offsetParent as HTMLElement | null;
+      const title = document.getElementById("hero-title");
+      const copy = document.getElementById("hero-copy");
+      if (!card || !wrap || !title || window.innerWidth < 1024) return setCardPos(null);
+      const w = wrap.getBoundingClientRect();
+      const words = Array.from(title.children).map((c) => c.getBoundingClientRect().right);
+      const titleRight = Math.max(title.getBoundingClientRect().left, ...words);
+      // the brain fills roughly the middle 86% of its canvas, whatever way it's spun
+      const brainLeft = w.left + w.width * 0.07;
+      const cw = card.offsetWidth;
+      const left = Math.max(titleRight + 32, brainLeft - 24 - cw) - w.left;
+      let top = (w.height - card.offsetHeight) / 2;
+      if (copy) {
+        const c = copy.getBoundingClientRect();
+        const overlapsCopyX = w.left + left < c.right;
+        const bottom = w.top + top + card.offsetHeight;
+        if (overlapsCopyX && bottom > c.top - 16) top -= bottom - (c.top - 16);
+      }
+      setCardPos({ left, top });
+    };
+    if (!picked) return;
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [picked]);
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => setSignedIn(!!data.user)).catch(() => setSignedIn(false));
@@ -64,13 +100,17 @@ export default function HeroBrain() {
 
       {picked && info && (
         <button
+          ref={cardRef}
           type="button"
           onClick={go}
           aria-label={`Listen to ${picked.tag.label} brain wave music`}
           className={`glass-wave-card absolute -top-3 left-0 z-20 sm:top-0 w-[min(66vw,250px)] origin-top-left rounded-2xl border border-white/20 bg-white/10 p-4 text-left text-[#F2E8DC] shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl ${
             leaving ? "glass-wave-card--leave" : ""
           }`}
-          style={{ boxShadow: `0 8px 40px rgba(0,0,0,.45), 0 0 50px -10px ${picked.tag.color}` }}
+          style={{
+            boxShadow: `0 8px 40px rgba(0,0,0,.45), 0 0 50px -10px ${picked.tag.color}`,
+            ...(cardPos ? { left: cardPos.left, top: cardPos.top } : {}),
+          }}
         >
           <span
             role="button"
