@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import { BRAIN_WAVE_TAGS } from "@/libs/trackCategories";
 import * as THREE from "three";
 
 // A procedural 3D brain for the homepage hero: two folded hemispheres, a
@@ -137,35 +139,119 @@ const rimMaterial = () =>
     side: THREE.BackSide,
   });
 
-function Brain() {
+// Where each brain wave's node sits on the brain (direction from the center;
+// the node snaps to the surface vertex that points most that way).
+const WAVE_SPOTS: Record<string, [number, number, number]> = {
+  gamma: [0.25, 1, 0.45],
+  beta: [0.8, 0.35, 0.7],
+  alpha: [-0.35, 0.9, -0.45],
+  theta: [-0.9, 0.05, 0.3],
+  delta: [0.75, 0.1, -0.75],
+};
+
+export type BrainWaveTag = (typeof BRAIN_WAVE_TAGS)[number];
+
+function WaveNode({
+  tag,
+  position,
+  active,
+  onPick,
+}: {
+  tag: BrainWaveTag;
+  position: THREE.Vector3;
+  active: boolean;
+  onPick: (tag: BrainWaveTag, world: THREE.Vector3) => void;
+}) {
+  const core = useRef<THREE.Mesh>(null);
+  const halo = useRef<THREE.Mesh>(null);
+  const [hover, setHover] = useState(false);
+  const color = useMemo(() => new THREE.Color(tag.color), [tag.color]);
+  // Faster waves pulse faster
+  const speed = 0.8 + tag.cycles * 0.35;
+
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime * speed;
+    const p = 0.5 + 0.5 * Math.sin(t);
+    const big = hover || active ? 1.35 : 1;
+    core.current?.scale.setScalar(big * (0.9 + 0.2 * p));
+    if (halo.current) {
+      halo.current.scale.setScalar(big * (1.5 + 0.7 * p));
+      (halo.current.material as THREE.MeshBasicMaterial).opacity = 0.12 + 0.22 * (1 - p);
+    }
+  });
+
+  const click = (e: ThreeEvent<MouseEvent>) => {
+    // ignore the click that ends a drag
+    if (e.delta > 6) return;
+    e.stopPropagation();
+    const world = new THREE.Vector3();
+    e.object.getWorldPosition(world);
+    onPick(tag, world);
+  };
+
+  return (
+    <group position={position}>
+      <mesh
+        ref={core}
+        onClick={click}
+        onPointerOver={(e) => { e.stopPropagation(); setHover(true); document.body.style.cursor = "pointer"; }}
+        onPointerOut={() => { setHover(false); document.body.style.cursor = ""; }}
+      >
+        <sphereGeometry args={[0.065, 32, 32]} />
+        <meshBasicMaterial color={color.clone().multiplyScalar(1.5)} toneMapped={false} />
+      </mesh>
+      <mesh ref={halo} raycast={() => null}>
+        <sphereGeometry args={[0.075, 24, 24]} />
+        <meshBasicMaterial color={color} transparent opacity={0.3} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <pointLight color={color} intensity={hover || active ? 2 : 0.6} distance={0.6} />
+    </group>
+  );
+}
+
+function Brain({
+  activeWave,
+  onPickWave,
+}: {
+  activeWave: string | null;
+  onPickWave: (tag: BrainWaveTag, world: THREE.Vector3) => void;
+}) {
   const group = useRef<THREE.Group>(null);
   const sparks = useRef<THREE.PointsMaterial>(null);
   const rims = useRef<THREE.ShaderMaterial[]>([]);
   const backLight = useRef<THREE.PointLight>(null);
 
-  const { brain, cerebellum, stem, sparkGeo } = useMemo(() => {
-        const seg2 = 200;
-    const brain = cerebrumGeometry(seg2);
+  const { brain, cerebellum, stem, sparkGeo, nodes } = useMemo(() => {
+    const brain = cerebrumGeometry(200);
     const cerebellum = lobeGeometry({ scale: [0.74, 0.34, 0.4], freq: 22, depth: 0.035, seg: 120 });
     const stem = new THREE.CylinderGeometry(0.15, 0.1, 0.7, 24, 1);
+    const a = brain.attributes.position as THREE.BufferAttribute;
+    const nrm = brain.attributes.normal as THREE.BufferAttribute;
 
-    // synapse sparkles: random points on the hemisphere surfaces
+    // synapse sparkles: random points on the surface
     const pts: number[] = [];
-    for (const [geo, off] of [[brain, 0]] as const) {
-      const a = geo.attributes.position as THREE.BufferAttribute;
-      const nrm = geo.attributes.normal as THREE.BufferAttribute;
-      for (let k = 0; k < 480; k++) {
-        const i = Math.floor(Math.random() * a.count);
-        pts.push(
-          a.getX(i) + off + nrm.getX(i) * 0.02,
-          a.getY(i) + nrm.getY(i) * 0.02,
-          a.getZ(i) + nrm.getZ(i) * 0.02,
-        );
-      }
+    for (let k = 0; k < 480; k++) {
+      const i = Math.floor(Math.random() * a.count);
+      pts.push(a.getX(i) + nrm.getX(i) * 0.02, a.getY(i) + nrm.getY(i) * 0.02, a.getZ(i) + nrm.getZ(i) * 0.02);
     }
     const sparkGeo = new THREE.BufferGeometry();
     sparkGeo.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
-    return { brain, cerebellum, stem, sparkGeo };
+
+    // brain wave nodes, sitting just above the surface
+    const v = new THREE.Vector3();
+    const nodes = BRAIN_WAVE_TAGS.map((tag) => {
+      const dir = new THREE.Vector3(...(WAVE_SPOTS[tag.subcategory] ?? [0, 1, 0])).normalize();
+      let best = 0, bestDot = -Infinity;
+      for (let i = 0; i < a.count; i += 3) {
+        v.fromBufferAttribute(a, i);
+        const d = v.clone().normalize().dot(dir) * v.length();
+        if (d > bestDot) { bestDot = d; best = i; }
+      }
+      const pos = new THREE.Vector3().fromBufferAttribute(a, best);
+      const n = new THREE.Vector3().fromBufferAttribute(nrm, best).normalize();
+      return { tag, position: pos.addScaledVector(n, 0.07) };
+    });
+    return { brain, cerebellum, stem, sparkGeo, nodes };
   }, []);
 
   const tissue = useMemo(
@@ -193,10 +279,10 @@ function Brain() {
     const pulse = 0.5 + 0.5 * Math.sin(((t * 1000) / PULSE_MS) * Math.PI * 2 - Math.PI / 2);
     if (group.current) {
       // three-quarter side view so it reads as a brain, swaying slowly
-      group.current.rotation.y = -1.05 + Math.sin(t * 0.22) * 0.4;
+      // (dragging orbits the camera around it on top of this)
+      group.current.rotation.y = -1.05 + Math.sin(t * 0.22) * 0.3;
       group.current.rotation.x = 0.22 + Math.sin(t * 0.17) * 0.05;
-      const s = 1 + 0.035 * pulse;
-      group.current.scale.setScalar(s);
+      group.current.scale.setScalar(1 + 0.035 * pulse);
     }
     tissue.emissiveIntensity = 0.45 + 0.55 * pulse;
     for (const r of rims.current) r.uniforms.uIntensity.value = 0.8 + 0.9 * pulse;
@@ -214,10 +300,10 @@ function Brain() {
 
       <group ref={group}>
         <mesh geometry={brain} material={tissue} />
-        <mesh geometry={brain} material={rimL} scale={1.05} />
+        <mesh geometry={brain} material={rimL} scale={1.05} raycast={() => null} />
         <mesh geometry={cerebellum} material={tissue} position={[0, -0.5, -0.78]} />
         <mesh geometry={stem} material={tissue} position={[0, -0.82, -0.38]} rotation={[0.35, 0, 0]} />
-        <points geometry={sparkGeo}>
+        <points geometry={sparkGeo} raycast={() => null}>
           <pointsMaterial
             ref={sparks}
             color="#ffd9b0"
@@ -228,20 +314,59 @@ function Brain() {
             blending={THREE.AdditiveBlending}
           />
         </points>
+        {nodes.map((n) => (
+          <WaveNode key={n.tag.subcategory} tag={n.tag} position={n.position} active={activeWave === n.tag.subcategory} onPick={onPickWave} />
+        ))}
       </group>
     </>
   );
 }
 
-export default function Brain3D() {
+// Flies the camera into the brain (toward the picked node) when `target` is set.
+function CameraDive({ target }: { target: THREE.Vector3 | null }) {
+  const { camera } = useThree();
+  useFrame((_, dt) => {
+    if (!target) return;
+    const goal = target.clone().multiplyScalar(1.4);
+    camera.position.lerp(goal, Math.min(1, dt * 2.2));
+    camera.lookAt(target);
+  });
+  return null;
+}
+
+export default function Brain3D({
+  activeWave = null,
+  diveTo = null,
+  onPickWave = () => {},
+}: {
+  activeWave?: string | null;
+  diveTo?: THREE.Vector3 | null;
+  onPickWave?: (tag: BrainWaveTag, world: THREE.Vector3) => void;
+}) {
   return (
     <Canvas
       dpr={[1, 2]}
       camera={{ position: [0, 0.05, 3.3], fov: 38 }}
       gl={{ alpha: true, antialias: true }}
-      style={{ background: "transparent" }}
+      // vertical swipes still scroll the page on phones; sideways drags spin the brain.
+      // Soft edges so the canvas never shows as a box (e.g. during the dive).
+      style={{
+        background: "transparent",
+        touchAction: "pan-y",
+        WebkitMaskImage: "radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%)",
+        maskImage: "radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%)",
+      }}
     >
-      <Brain />
+      <Brain activeWave={activeWave} onPickWave={onPickWave} />
+      <OrbitControls
+        enabled={!diveTo}
+        enableZoom={false}
+        enablePan={false}
+        // spin only (no moving it around): a full 360 sideways, and over the top and under
+        rotateSpeed={0.8}
+        enableDamping
+      />
+      <CameraDive target={diveTo} />
     </Canvas>
   );
 }

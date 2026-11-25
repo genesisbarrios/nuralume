@@ -9,14 +9,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: { next?: string } }) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect(config.auth.callbackUrl);
+    const next = searchParams?.next;
+    redirect(next && next.startsWith("/dashboard") && !next.startsWith("//") ? next : config.auth.callbackUrl);
   }
 
   return (

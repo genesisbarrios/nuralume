@@ -16,11 +16,14 @@ const CATEGORIES: TrackCategory[] = ["brain_waves", "solfeggio", "binaural_beats
 
 export default function MusicTabs({
   tracksByCategory,
+  initialWave = null,
 }: {
   tracksByCategory: Record<TrackCategory, Track[]>;
+  // ?wave=alpha (from the homepage brain): open Brain Waves on that band
+  initialWave?: TrackSubcategory | null;
 }) {
-  const [category, setCategory] = useState<TrackCategory>("solfeggio");
-  const [selectedSubcategory, setSelectedSubcategory] = useState<TrackSubcategory | null>(null);
+  const [category, setCategory] = useState<TrackCategory>(initialWave ? "brain_waves" : "solfeggio");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<TrackSubcategory | null>(initialWave);
 
   const tracks = tracksByCategory[category];
   const visibleTracks = selectedSubcategory
