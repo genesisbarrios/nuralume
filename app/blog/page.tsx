@@ -6,16 +6,17 @@ import { BLOG_POSTS } from "@/libs/blogPosts";
 import config from "@/config";
 import { defaultOgImage } from "@/libs/seo";
 
-const title = "Blog";
+const title = "Spiritual Blog: Meditation, Sound Healing & Spirituality";
 const description =
-  "Guides on meditation, yoga, Buddhist practice, the Law of One, and Hindu philosophy for beginners.";
+  "Beginner-friendly spiritual guides: meditation, sound healing, brain waves, daily affirmations, yoga, Buddhism, Hindu philosophy and the Law of One.";
 
 export const metadata: Metadata = {
   title,
   description,
+  keywords: ["spiritual blog", "spirituality for beginners", "meditation guide", "sound healing", "buddhism for beginners", "law of one", "daily affirmations", "spiritual growth"],
   alternates: { canonical: "/blog" },
   openGraph: { title: `${title} — ${config.appName}`, description, type: "website", images: [defaultOgImage] },
-  twitter: { card: "summary", title: `${title} — ${config.appName}`, description, images: [defaultOgImage.url] },
+  twitter: { card: "summary_large_image", title: `${title} — ${config.appName}`, description, images: [defaultOgImage.url] },
 };
 
 export default function BlogIndexPage() {

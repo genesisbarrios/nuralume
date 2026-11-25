@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/libs/supabase/server";
+import { syncProfileEmail } from "@/libs/profileEmail";
 // Narrower than libs/horoscope's HoroscopeFrequency (which also allows
 // "monthly" for browsing in the Astrology tab) — the profiles table's
 // horoscope_frequency column only supports daily/weekly for the Home page.
@@ -39,6 +40,9 @@ export async function getProfileBirthData(): Promise<ProfileBirthData | null> {
   if (error) {
     console.error("[getProfileBirthData] query failed:", error);
   }
+
+  // Save the email on the profile if the signup trigger didn't
+  if (!error) await syncProfileEmail(supabase, user, data?.email ?? null);
 
   return {
     email: data?.email ?? user.email ?? null,

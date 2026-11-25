@@ -3,6 +3,7 @@ import Image from "next/image";
 import config from "@/config";
 import ButtonAccount from "@/components/ButtonAccount";
 import Footer from "@/components/Footer";
+import HeroScene from "@/components/HeroScene";
 import { DesktopNav, MobileNav } from "./BottomNav";
 
 export default function DashboardShell({
@@ -15,7 +16,11 @@ export default function DashboardShell({
   displayName: string | null;
 }) {
   return (
-    <div className="min-h-screen bg-notebook-cover">
+    <div className="relative isolate min-h-screen bg-[#030208]">
+      {/* the homepage's space backdrop (stardust, soundwaves, neurons), minus the brain */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+        <HeroScene />
+      </div>
       <div className="mx-auto flex max-w-lg items-center justify-between px-5 pt-6 lg:max-w-4xl lg:pl-24">
         <Link href="https://nuralume.xyz" className="flex items-center gap-2 text-white">
           <Image

@@ -2,29 +2,9 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import config from "@/config";
+import { FAQS } from "@/libs/faqs";
 
-const faqs = [
-  {
-    question: "Do I need any experience with meditation or astrology?",
-    answer:
-      "No. Nuralume is built for beginners and experienced practitioners alike — the music tab needs no explanation, and every personality test comes with plain-language context.",
-  },
-  {
-    question: "Where does the healing music come from?",
-    answer:
-      "We curate and upload the Brain Wave, Solfeggio, and Binaural Beats tracks ourselves, so the library keeps growing without you having to do anything.",
-  },
-  {
-    question: "Is my birth data private?",
-    answer:
-      "Yes. Your birth date, time, and location are only used to generate your astrology and Human Design results, and are never shared or shown to other users.",
-  },
-  {
-    question: "Can I use Nuralume for free?",
-    answer: `Yes — the ${config.stripe.plans[0]?.name ?? "Starter"} plan gives you daily affirmations, basic reminders, and your sun-sign horoscope at no cost.`,
-  },
-];
+const faqs = FAQS;
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState(0);
@@ -56,11 +36,10 @@ export default function FAQ() {
                     }`}
                   />
                 </button>
-                {isOpen && (
-                  <p className="px-5 pb-5 text-sm text-base-content/70">
-                    {faq.answer}
-                  </p>
-                )}
+                {/* always in the HTML (hidden when closed) so search engines read every answer */}
+                <p hidden={!isOpen} className="px-5 pb-5 text-sm text-base-content/70">
+                  {faq.answer}
+                </p>
               </div>
             );
           })}

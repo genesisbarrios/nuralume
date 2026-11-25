@@ -21,13 +21,13 @@ const features: Feature[] = [
     icon: Music2,
     title: "Healing Music",
     description:
-      "Brain wave tracks, Sound Healing, and binaural beats, organized into simple, focused sessions you can play anytime.",
+      "Sound healing for every state of mind: solfeggio frequencies like 432 Hz and 528 Hz, binaural beats, and delta, theta, alpha, beta and gamma brain wave music for sleep, meditation, relaxation and focus.",
   },
   {
     icon: Sparkles,
     title: "Daily Affirmations",
     description:
-      "A new affirmation each day, with a shuffle for when you need a different perspective, and a spot to save the ones that stick.",
+      "A new positive affirmation each day for self-love, abundance and calm, with a shuffle for when you need a different perspective and a spot to save the ones that stick.",
   },
   {
     icon: BellRing,
@@ -37,9 +37,9 @@ const features: Feature[] = [
   },
   {
     icon: Moon,
-    title: "Horoscope",
+    title: "Horoscope & Astrology",
     description:
-      "Your daily horoscope, tuned to your sign, ready the moment you open your dashboard.",
+      "Your daily horoscope, plus your full birth chart, numerology numbers and Human Design type, calculated from your birth date, time and place.",
   },
   {
     icon: Fingerprint,

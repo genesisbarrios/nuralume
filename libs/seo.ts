@@ -9,8 +9,8 @@ import config from "@/config";
 // find an image instead of falling back to whatever <img> happens to be
 // first in the rendered page (usually the transparent header logo).
 export const defaultOgImage = {
-  url: "/nuralume-logo.png",
-  width: 603,
-  height: 722,
-  alt: config.appName,
+  url: "/og.jpg",
+  width: 1200,
+  height: 630,
+  alt: `${config.appName}: sound healing, astrology and spiritual wellness`,
 };

@@ -21,7 +21,9 @@ type Spark = { x: number; y: number; life: number; hue: number };
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
-export default function HeroScene({ brainId }: { brainId: string }) {
+// Without a brainId (e.g. the dashboard background) there is no brain:
+// no glow, and neurons just streak across the sky.
+export default function HeroScene({ brainId }: { brainId?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function HeroScene({ brainId }: { brainId: string }) {
     // where the brain image sits, relative to the canvas (measured on resize)
     let b0 = { x: 0, y: 0, r: 100 };
     const measure = () => {
-      const el = document.getElementById(brainId);
+      const el = brainId ? document.getElementById(brainId) : null;
       const c = canvas.getBoundingClientRect();
       if (!el) { b0 = { x: w / 2, y: h * 0.35, r: Math.min(w, h) * 0.18 }; return; }
       const r = el.getBoundingClientRect();
@@ -89,7 +91,7 @@ export default function HeroScene({ brainId }: { brainId: string }) {
     // curved path and flashes when it lands.
     const spawn = () => {
       const b = brain();
-      const fromBrain = Math.random() < 0.7;
+      const fromBrain = !!brainId && Math.random() < 0.7;
       const ang = Math.random() * Math.PI * 2;
       let p0: [number, number], p2: [number, number];
       if (fromBrain) {
@@ -185,6 +187,7 @@ export default function HeroScene({ brainId }: { brainId: string }) {
       }
 
       // glow behind the brain, breathing with its pulse
+      if (brainId) {
       const gr = b.r * (1.5 + 0.35 * pulse);
       const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, gr);
       g.addColorStop(0, `rgba(255, 205, 150, ${0.16 + 0.14 * pulse})`);
@@ -192,6 +195,7 @@ export default function HeroScene({ brainId }: { brainId: string }) {
       g.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = g;
       ctx.fillRect(b.x - gr, b.y - gr, gr * 2, gr * 2);
+      }
 
       // neurons
       if (!reduced) {

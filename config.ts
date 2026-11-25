@@ -31,9 +31,11 @@ interface ConfigProps {
 const config: ConfigProps = {
   appName: "Nuralume",
   appDescription:
-    "Healing music, daily affirmations, reminders, horoscope, and personality insights in one calming space.",
+    "A spiritual wellness app: sound healing with solfeggio frequencies, binaural beats and brain waves, daily affirmations, your horoscope, birth chart, numerology and Human Design, all in one calming space.",
   tagline: "tune your mind.",
-  domainName: "nuralume.xyz",
+  // The site is served at www (the apex redirects there), so canonicals,
+  // sitemap and structured data must use it too.
+  domainName: "www.nuralume.xyz",
   stripe: {
     plans: [
       {

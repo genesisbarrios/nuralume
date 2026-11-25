@@ -14,17 +14,17 @@ const PopItGame = dynamic(() => import("@/components/games/PopItGame"), {
   ),
 });
 
-const title = "Grounding Games";
+const title = "Grounding Games for Anxiety Relief";
 const description =
-  "A free, no-signup grounding game — drag to spin, tap to pop. Try it right here, no account needed.";
+  "Free grounding games to calm anxiety and come back to the present moment. Drag to spin, tap to pop: no sign-up, right in your browser.";
 
 export const metadata: Metadata = {
   title,
   description,
-  keywords: ["grounding games", "fidget game", "anxiety relief game", "free stress relief"],
+  keywords: ["grounding games", "grounding techniques", "anxiety relief game", "calming games", "fidget game", "free stress relief", "mindfulness game"],
   alternates: { canonical: "/games" },
   openGraph: { title, description, type: "website", images: [defaultOgImage] },
-  twitter: { card: "summary", title, description, images: [defaultOgImage.url] },
+  twitter: { card: "summary_large_image", title, description, images: [defaultOgImage.url] },
 };
 
 export default function GamesTrialPage() {
