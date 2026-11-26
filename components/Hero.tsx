@@ -14,7 +14,7 @@ export default function Hero() {
       {/* Desktop: text on the left (buttons bottom-left), brain on the right,
           all within one screen. Phones: brain on top, text below. */}
       <div className="relative mx-auto grid min-h-[100svh] max-w-7xl grid-cols-1 items-center gap-2 px-4 pb-12 pt-20 sm:px-6 lg:h-[100svh] lg:min-h-[640px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-8 lg:px-10 lg:pb-10 lg:pt-20">
-        <div id="hero-brain" className="relative mx-auto aspect-[4/3] w-[min(88vw,520px)] -mb-4 lg:order-2 lg:mb-0 lg:w-full lg:max-w-[680px]">
+        <div id="hero-brain" className="relative mx-auto aspect-[4/3] w-[min(88vw,520px)] -mb-4 lg:order-2 lg:mb-0 lg:w-full lg:max-w-[680px] lg:translate-x-10">
           <HeroBrain />
         </div>
 
